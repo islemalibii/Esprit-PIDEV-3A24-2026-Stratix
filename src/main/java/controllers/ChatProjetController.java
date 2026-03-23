@@ -47,7 +47,6 @@ public class ChatProjetController {
         chatContainer.getChildren().clear();
         displayedMessageIds.clear();
 
-        // Auto-scroll vers le bas lors de l'ajout de messages
         chatContainer.heightProperty().addListener((obs, oldVal, newVal) -> {
             if (scrollPane != null) scrollPane.setVvalue(1.0);
         });
@@ -115,25 +114,20 @@ public class ChatProjetController {
     }
 
     private void displayMessage(String sender, String content, long timestamp) {
-        // Conteneur global du message (Header + Bulle)
         VBox msgWrapper = new VBox(3);
         boolean isMe = sender.equals(myName);
 
-        // --- 1. Header (Nom + Heure) ---
+
         String heure = new SimpleDateFormat("HH:mm").format(new Date(timestamp));
         Label headerLbl = new Label(isMe ? "Moi • " + heure : sender + " • " + heure);
         headerLbl.setStyle("-fx-font-size: 10px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;");
-
-        // --- 2. Bulle de texte ---
         Label contentLbl = new Label(content);
         contentLbl.setWrapText(true);
         contentLbl.setMaxWidth(280);
         contentLbl.setMinHeight(Region.USE_PREF_SIZE);
 
-        // --- 3. Style et Alignement ---
         if (isMe) {
             msgWrapper.setAlignment(Pos.TOP_RIGHT);
-            // Bulle BLEUE moderne
             contentLbl.setStyle(
                     "-fx-background-color: #3b82f6; " +
                             "-fx-text-fill: white; " +
@@ -142,7 +136,6 @@ public class ChatProjetController {
             );
         } else {
             msgWrapper.setAlignment(Pos.TOP_LEFT);
-            // Bulle GRISE douce
             contentLbl.setStyle(
                     "-fx-background-color: #b3b3b3; " +
                             "-fx-text-fill: #1e293b; " +
@@ -151,7 +144,6 @@ public class ChatProjetController {
             );
         }
 
-        // Ajout d'une petite marge pour que les bulles ne se touchent pas
         VBox.setMargin(msgWrapper, new Insets(5, 0, 5, 0));
 
         msgWrapper.getChildren().addAll(headerLbl, contentLbl);
