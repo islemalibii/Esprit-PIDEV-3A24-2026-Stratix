@@ -3,7 +3,6 @@ package controllers;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -15,7 +14,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Projet;
 import services.ProjetService;
-import utils.MyDataBase;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
@@ -31,9 +29,6 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 public class ListeProjetsController {
@@ -55,7 +50,9 @@ public class ListeProjetsController {
             try {
                 Image logo = new Image(getClass().getResourceAsStream("/stratix.png"));
                 logoImageView.setImage(logo);
-            } catch (Exception e) { System.out.println("Logo introuvable."); }
+            } catch (Exception e) {
+                System.out.println("Logo introuvable.");
+            }
         }
 
         if (comboFiltre != null) {
@@ -97,58 +94,68 @@ public class ListeProjetsController {
 
     private VBox creerCardProjet(Projet p) {
         VBox card = new VBox(15);
-        card.setPrefWidth(320);
-        card.setPadding(new Insets(20));
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 15; " +
-                "-fx-border-color: #e2e8f0; -fx-border-radius: 15; " +
-                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);");
+        card.getStyleClass().add("project-card");
+        card.setPrefWidth(350);
 
         Label statutBadge = new Label(p.getStatut().toUpperCase());
-        statutBadge.setStyle("-fx-background-color: " + getStatusHexColor(p.getStatut()) +
-                "; -fx-text-fill: white; -fx-padding: 5 12; -fx-background-radius: 20; " +
-                "-fx-font-size: 11px; -fx-font-weight: bold;");
+        statutBadge.getStyleClass().add("statut-badge");
+        String statusClass = switch (p.getStatut().toLowerCase()) {
+            case "terminé"  -> "badge-termine";
+            case "en cours" -> "badge-en-cours";
+            case "annulé"   -> "badge-annule";
+            default         -> "badge-planifie";
+        };
+        statutBadge.getStyleClass().add(statusClass);
 
         Label nom = new Label(p.getNom());
-        nom.setStyle("-fx-font-weight: 900; -fx-font-size: 20px; -fx-text-fill: #1a202c;");
-        nom.setWrapText(true);
-        nom.setMinHeight(60);
-        nom.setAlignment(Pos.CENTER_LEFT);
+        nom.getStyleClass().add("project-title");
+
+        Label desc = new Label(p.getDescription());
+        desc.getStyleClass().add("project-desc");
+        desc.setWrapText(true);
+        desc.setMaxHeight(50);
 
         VBox progBox = new VBox(8);
-        Label lblProg = new Label("Progression: " + p.getProgression() + "%");
-        lblProg.setStyle("-fx-text-fill: #4a5568; -fx-font-size: 13px; -fx-font-weight: bold;");
-
+        HBox labelBox = new HBox();
+        Label lblProgText = new Label("Progression");
+        lblProgText.getStyleClass().add("summary-label");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Label lblPercentage = new Label(p.getProgression() + "%");
+        lblPercentage.getStyleClass().add("summary-value");
+        lblPercentage.setStyle("-fx-font-size: 14px;");
+        labelBox.getChildren().addAll(lblProgText, spacer, lblPercentage);
         ProgressBar pb = new ProgressBar(p.getProgression() / 100.0);
+        pb.getStyleClass().add("progress-bar");
         pb.setPrefWidth(Double.MAX_VALUE);
-        pb.setPrefHeight(12);
-        pb.setStyle("-fx-accent: #3182ce;");
-        progBox.getChildren().addAll(lblProg, pb);
+        progBox.getChildren().addAll(labelBox, pb);
 
-        HBox actions = new HBox(8);
-        actions.setAlignment(Pos.CENTER);
+        HBox actions = new HBox(10);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+        Button btnView = new Button("Voir Détails");
+        btnView.getStyleClass().add("btn-secondary");
+        btnView.setOnAction(e -> voirDetails(p));
+        actions.getChildren().add(btnView);
 
-        Button btnMod = new Button("Modifier");
-        btnMod.setStyle("-fx-cursor: hand;");
-        btnMod.setOnAction(e -> ouvrirFenetreModification(p));
-
-        Button btnPdf = new Button("PDF");
-        btnPdf.setStyle("-fx-background-color: #e53e3e; -fx-text-fill: white; -fx-cursor: hand;");
-        btnPdf.setOnAction(e -> exporterEnPDF(p));
-
-        Button btnChat = new Button("Chat");
-        btnChat.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
-        btnChat.setOnAction(e -> ouvrirChatSpecifique(p));
-
-        actions.getChildren().addAll(btnMod, btnPdf, btnChat);
-
-        Button btnArch = new Button("Archiver le projet");
-        btnArch.setMaxWidth(Double.MAX_VALUE);
-        btnArch.setPrefHeight(40);
-        btnArch.setStyle("-fx-background-color: #ed8936; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-cursor: hand;");
-        btnArch.setOnAction(e -> handleArchiver(p));
-
-        card.getChildren().addAll(statutBadge, nom, new Separator(), progBox, actions, btnArch);
+        card.getChildren().addAll(statutBadge, nom, desc, new Separator(), progBox, actions);
         return card;
+    }
+
+    /**
+     * Charge la vue détails dans le contentArea du MainController (sidebar reste visible)
+     */
+    public void voirDetails(Projet p) {
+        if (MainController.staticContentArea == null) return;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/detailsProjet.fxml"));
+            Parent root = loader.load();
+            DetailsProjetController controller = loader.getController();
+            controller.setProjet(p);
+            MainController.staticContentArea.getChildren().setAll(root);
+        } catch (IOException e) {
+            System.err.println("❌ Erreur chargement détails: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void exporterEnPDF(Projet p) {
@@ -157,94 +164,25 @@ public class ListeProjetsController {
             String fileName = "Rapport_" + p.getNom().replace(" ", "_") + ".pdf";
             PdfWriter.getInstance(document, new FileOutputStream(fileName));
             document.open();
-
-            // 1. Titre
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, Color.BLUE);
-            Paragraph titre = new Paragraph("STRATIX - RAPPORT DÉTAILLÉ DU PROJET", titleFont);
+            Paragraph titre = new Paragraph("STRATIX - RAPPORT PROJET", titleFont);
             titre.setAlignment(Element.ALIGN_CENTER);
             document.add(titre);
-            document.add(new Paragraph(" "));
-
-            // 2. Informations détaillées (Sauf ID)
-            document.add(new Paragraph("Nom du Projet : " + p.getNom()));
-            document.add(new Paragraph("Responsable : " + recupererNomChef(p.getResponsableId())));
-            document.add(new Paragraph("Statut : " + p.getStatut()));
-            document.add(new Paragraph("Budget : " + p.getBudget() + " DT"));
-            document.add(new Paragraph("Date de Début : " + p.getDateDebut()));
-            document.add(new Paragraph("Date de Fin : " + p.getDateFin()));
-            document.add(new Paragraph("Progression : " + p.getProgression() + "%"));
-            document.add(new Paragraph("Description : " + p.getDescription()));
-            document.add(new Paragraph(" "));
-
-            // 3. Génération du QR Code complet (Toutes les infos sauf ID)
-            String qrData = String.format(
-                    "STRATIX - FICHE PROJET\nNom: %s\nResponsable: %s\nStatut: %s\nBudget: %s DT\nProgression: %d%%\nDescription: %s",
-                    p.getNom(), recupererNomChef(p.getResponsableId()), p.getStatut(), p.getBudget(), p.getProgression(), p.getDescription()
-            );
-
-            String qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + URLEncoder.encode(qrData, StandardCharsets.UTF_8);
-
-            // Insertion de l'image QR Code dans le PDF
+            document.add(new Paragraph("\nNom: " + p.getNom() + "\nStatut: " + p.getStatut() + "\nBudget: " + p.getBudget() + " DT\nDescription: " + p.getDescription()));
+            String qrData = "Projet: " + p.getNom() + " | Statut: " + p.getStatut();
+            String qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + URLEncoder.encode(qrData, StandardCharsets.UTF_8);
             com.lowagie.text.Image qrImage = com.lowagie.text.Image.getInstance(new java.net.URL(qrCodeUrl));
             qrImage.setAlignment(Element.ALIGN_CENTER);
-            qrImage.scalePercent(80);
             document.add(qrImage);
-
             document.close();
             Desktop.getDesktop().open(new File(fileName));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            afficherErreur("Erreur PDF", "Erreur lors de la génération du PDF.");
-        }
-    }
-
-    private void ouvrirChatSpecifique(Projet p) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChatProjet.fxml"));
-            Parent root = loader.load();
-            ChatProjetController chatCtrl = loader.getController();
-            chatCtrl.initChat(p.getId(), p.getNom());
-            Stage stage = new Stage();
-            stage.setTitle("Discussion Admin : " + p.getNom());
-            stage.setScene(new Scene(root));
-            stage.setOnCloseRequest(e -> chatCtrl.stopChat());
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            afficherErreur("Erreur Chat", "Impossible d'ouvrir le chat.");
-        }
-    }
-
-    private String getStatusHexColor(String statut) {
-        return switch (statut != null ? statut : "") {
-            case "Terminé" -> "#48bb78";
-            case "En cours" -> "#38b2ac";
-            case "Annulé" -> "#f56565";
-            default -> "#4299e1";
-        };
-    }
-
-    private String recupererNomChef(int id) {
-        String nomComplet = "Non assigné";
-        if (id <= 0) return nomComplet;
-        String sql = "SELECT nom, prenom FROM utilisateur WHERE id = ?";
-        try (PreparedStatement pstmt = MyDataBase.getInstance().getCnx().prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) nomComplet = rs.getString("nom") + " " + rs.getString("prenom");
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return nomComplet;
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void handleArchiver(Projet p) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Archiver '" + p.getNom() + "' ?", ButtonType.YES, ButtonType.NO);
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.YES) {
-                projetService.archiverUnProjet(p.getId());
-                rafraichirDonnees();
-            }
+        confirm.showAndWait().ifPresent(res -> {
+            if (res == ButtonType.YES) { projetService.archiverUnProjet(p.getId()); rafraichirDonnees(); }
         });
     }
 
@@ -261,6 +199,18 @@ public class ListeProjetsController {
         } catch (IOException e) { e.printStackTrace(); }
     }
 
+    private void ouvrirChatSpecifique(Projet p) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChatProjet.fxml"));
+            Parent root = loader.load();
+            ChatProjetController chatCtrl = loader.getController();
+            chatCtrl.initChat(p.getId(), p.getNom());
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
     @FXML private void voirArchives() { chargerFenetre("/ListeArchives.fxml", "Archives"); }
     @FXML private void allerAjouterProjet() { chargerFenetre("/AjouterProjet.fxml", "Nouveau Projet"); }
 
@@ -268,15 +218,10 @@ public class ListeProjetsController {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
             Stage stage = new Stage();
-            stage.setTitle(titre);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
             stage.showAndWait();
             rafraichirDonnees();
         } catch (IOException e) { e.printStackTrace(); }
-    }
-
-    private void afficherErreur(String titre, String msg) {
-        new Alert(Alert.AlertType.ERROR, msg).showAndWait();
     }
 }

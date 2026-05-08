@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="25" stylesheets="@/style.css"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.DetailsProjetController">
+
+    <padding>
+        <Insets top="30" right="40" bottom="30" left="40"/>
+    </padding>
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT">
+        <children>
+            <VBox HBox.hgrow="ALWAYS">
+                <children>
+                    <Label fx:id="labelNomTitre" style="-fx-font-size: 28; -fx-font-weight: bold;" text="Nom du Projet" styleClass="project-title"/>
+                    <Label text="Consultation des détails du projet" styleClass="project-desc"/>
+                </children>
+            </VBox>
+            <Button onAction="#retourListe" styleClass="btn-secondary" text="← Retour à la liste"/>
+        </children>
+    </HBox>
+
+    <!-- Contenu principal -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent;">
+        <content>
+            <GridPane hgap="30.0" vgap="20.0">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="600.0"/>
+                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="380.0" minWidth="10.0" prefWidth="350.0"/>
+                </columnConstraints>
+                <children>
+
+                    <!-- Fiche Descriptive -->
+                    <VBox styleClass="summary-card" style="-fx-padding: 35;">
+                        <children>
+                            <Label styleClass="project-title" text="Fiche Descriptive"/>
+                            <Separator prefWidth="200.0" style="-fx-padding: 20 0;"/>
+                            <GridPane vgap="25.0">
+                                <columnConstraints>
+                                    <ColumnConstraints prefWidth="180"/>
+                                    <ColumnConstraints hgrow="ALWAYS"/>
+                                </columnConstraints>
+                                <children>
+                                    <Label text="NOM" styleClass="summary-label"/>
+                                    <Label fx:id="labelNom" styleClass="project-title" GridPane.columnIndex="1"/>
+
+                                    <Label text="DESCRIPTION" styleClass="summary-label" GridPane.rowIndex="1"/>
+                                    <Label fx:id="labelDescription" styleClass="project-desc" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                                    <Label text="BUDGET TOTAL" styleClass="summary-label" GridPane.rowIndex="2"/>
+                                    <Label fx:id="labelBudget" styleClass="summary-value" style="-fx-text-fill: #10b981;" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                </children>
+                            </GridPane>
+                        </children>
+                    </VBox>
+
+                    <!-- Colonne droite : Statut + Planning -->
+                    <VBox spacing="25.0" GridPane.columnIndex="1">
+                        <children>
+
+                            <!-- Statut -->
+                            <VBox alignment="CENTER" spacing="15" styleClass="summary-card" style="-fx-padding: 25;">
+                                <children>
+                                    <Label text="STATUT" styleClass="summary-label"/>
+                                    <Label fx:id="labelStatut" styleClass="statut-badge, badge-planifie" text="PLANIFIÉ"/>
+                                </children>
+                            </VBox>
+
+                            <!-- Planning -->
+                            <VBox spacing="20" styleClass="summary-card" style="-fx-padding: 25;">
+                                <children>
+                                    <Label text="Planning" styleClass="project-title" style="-fx-font-size: 18;"/>
+                                    <Separator/>
+                                    <VBox spacing="15">
+                                        <children>
+                                            <VBox spacing="5">
+                                                <Label text="DÉBUT" styleClass="summary-label"/>
+                                                <Label fx:id="labelDateDebut" style="-fx-font-weight: bold; -fx-font-size: 16;" text="16/05/2026"/>
+                                            </VBox>
+                                            <VBox spacing="5">
+                                                <Label text="FIN ESTIMÉE" styleClass="summary-label"/>
+                                                <Label fx:id="labelDateFin" style="-fx-font-weight: bold; -fx-font-size: 16;" text="29/05/2026"/>
+                                            </VBox>
+                                        </children>
+                                    </VBox>
+                                </children>
+                            </VBox>
+
+                        </children>
+                    </VBox>
+
+                </children>
+            </GridPane>
+        </content>
+    </ScrollPane>
+
+</VBox>
