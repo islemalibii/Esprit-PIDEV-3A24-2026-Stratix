@@ -1,6 +1,5 @@
 package controllers;
 
-import javafx.geometry.Insets;
 import models.Role;
 import models.UserRole;
 import services.AuthenticationService;
@@ -13,6 +12,7 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class LoginController {
+
+    // ← Changer false en true pour réactiver le 2FA
+    private static final boolean ENABLE_2FA = false;
 
     @FXML
     private Button googleLoginButton;
@@ -52,7 +55,7 @@ public class LoginController {
 
     @FXML
     private Label errorLabel;
-    
+
     @FXML
     private Label countdownLabel;
 
@@ -61,7 +64,7 @@ public class LoginController {
 
     @FXML
     private Hyperlink signupLink;
-    
+
     @FXML
     private Hyperlink forgotPasswordLink;
 
@@ -74,7 +77,7 @@ public class LoginController {
         utilisateurService = UtilisateurService.getInstance();
         authService = AuthenticationService.getInstance();
         emailService = EmailService.getInstance();
-        
+
         // Générer le CAPTCHA initial
         refreshCaptcha();
 
@@ -82,7 +85,7 @@ public class LoginController {
         emailField.textProperty().addListener((observable, oldValue, newValue) -> {
             errorLabel.setVisible(false);
         });
-        
+
         // Validation email au focus perdu
         emailField.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue && !emailField.getText().isEmpty()) {
@@ -93,7 +96,7 @@ public class LoginController {
                 }
             }
         });
-        
+
         // Masquer l'erreur quand on tape le mot de passe
         passwordField.textProperty().addListener((observable, oldValue, newValue) -> {
             errorLabel.setVisible(false);
@@ -169,8 +172,13 @@ public class LoginController {
                 // Réinitialiser les tentatives échouées
                 authService.resetFailedAttempts(email);
 
-                // 2FA OBLIGATOIRE pour tous les utilisateurs
-                show2FADialog(user);
+                // 2FA - changer ENABLE_2FA en true/false pour activer/désactiver
+                if (ENABLE_2FA) {
+                    show2FADialog(user);
+                } else {
+                    SessionManager.getInstance().saveSession(user.getId(), user.getEmail(), user.getRole().name());
+                    redirectToRoleDashboard(user);
+                }
             } else {
                 // Enregistrer tentative échouée
                 authService.recordFailedLogin(email);
@@ -183,7 +191,7 @@ public class LoginController {
             e.printStackTrace();
         }
     }
-    
+
     /**
      * Afficher le dialog 2FA
      */
@@ -191,10 +199,10 @@ public class LoginController {
         try {
             // Générer un nouveau code 2FA
             String code = authService.generate2FACode(user.getId());
-            
+
             // Envoyer le code par email
             boolean emailSent = emailService.send2FACode(user.getEmail(), code);
-            
+
             if (emailSent) {
                 // Email envoyé avec succès
                 Alert infoAlert = new Alert(Alert.AlertType.INFORMATION);
@@ -210,13 +218,13 @@ public class LoginController {
                 codeAlert.setContentText("Votre code de vérification: " + code + "\n\n(Configurez votre serveur SMTP dans EmailService.java pour activer l'envoi d'emails)");
                 codeAlert.showAndWait();
             }
-            
+
             // Dialog pour entrer le code
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Authentification à deux facteurs");
             dialog.setHeaderText("Entrez le code de vérification");
             dialog.setContentText("Code:");
-            
+
             Optional<String> result = dialog.showAndWait();
             result.ifPresent(enteredCode -> {
                 try {
@@ -237,7 +245,7 @@ public class LoginController {
             e.printStackTrace();
         }
     }
-    
+
     /**
      * Rediriger vers le dashboard selon le rôle
      */
@@ -248,15 +256,15 @@ public class LoginController {
         } else {
             openStandardUserDashboard(user);
         }
-        }
-    
+    }
+
     @FXML
     void handleForgotPassword(ActionEvent event) {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Mot de passe oublié");
         dialog.setHeaderText("Réinitialisation du mot de passe");
         dialog.setContentText("Entrez votre email:");
-        
+
         // Appliquer le CSS
         dialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
@@ -268,17 +276,17 @@ public class LoginController {
                 if (user != null) {
                     // Générer un code de vérification (6 chiffres)
                     String code = PasswordValidator.generate2FACode();
-                    
+
                     // Envoyer l'email
                     boolean emailSent = emailService.sendPasswordResetEmail(email, code);
-                    
+
                     if (emailSent) {
                         Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
                         successAlert.setTitle("Email envoyé");
                         successAlert.setHeaderText("Code de vérification envoyé");
                         successAlert.setContentText("Un code de vérification a été envoyé à votre adresse email.\n\nVérifiez votre boîte de réception.");
                         successAlert.showAndWait();
-                        
+
                         // Ouvrir le dialog de réinitialisation avec le code et l'email
                         showResetPasswordDialog(email, code);
                     } else {
@@ -288,7 +296,7 @@ public class LoginController {
                         codeAlert.setHeaderText("Impossible d'envoyer l'email");
                         codeAlert.setContentText("Votre code de vérification: " + code + "\n\n(Configurez votre serveur SMTP dans EmailService.java pour activer l'envoi d'emails)");
                         codeAlert.showAndWait();
-                        
+
                         showResetPasswordDialog(email, code);
                     }
                 } else {
@@ -300,7 +308,7 @@ public class LoginController {
             }
         });
     }
-    
+
     /**
      * Dialog pour réinitialiser le mot de passe
      */
@@ -308,40 +316,40 @@ public class LoginController {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Réinitialiser le mot de passe");
         dialog.setHeaderText("Entrez le code reçu par email et votre nouveau mot de passe");
-        
+
         // Appliquer le CSS
         dialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         ButtonType resetButtonType = new ButtonType("Réinitialiser", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(resetButtonType, ButtonType.CANCEL);
-        
+
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20));
-        
+
         TextField codeField = new TextField();
         codeField.setPromptText("Code de vérification");
         PasswordField newPasswordField = new PasswordField();
         newPasswordField.setPromptText("Nouveau mot de passe");
         PasswordField confirmPasswordField = new PasswordField();
         confirmPasswordField.setPromptText("Confirmer mot de passe");
-        
+
         // Label pour afficher les exigences du mot de passe
         Label requirementsLabel = new Label(
-            "Le mot de passe doit contenir:\n" +
-            "• Au moins 8 caractères\n" +
-            "• Une lettre majuscule\n" +
-            "• Une lettre minuscule\n" +
-            "• Un chiffre\n" +
-            "• Un caractère spécial (@#$%^&+=!)"
+                "Le mot de passe doit contenir:\n" +
+                        "• Au moins 8 caractères\n" +
+                        "• Une lettre majuscule\n" +
+                        "• Une lettre minuscule\n" +
+                        "• Un chiffre\n" +
+                        "• Un caractère spécial (@#$%^&+=!)"
         );
         requirementsLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
-        
+
         // Label pour l'indicateur de force
         Label strengthLabel = new Label();
         strengthLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold;");
-        
+
         // Validation en temps réel
         newPasswordField.textProperty().addListener((observable, oldValue, newValue) -> {
             PasswordValidator.ValidationResult validation = PasswordValidator.validatePassword(newValue);
@@ -358,7 +366,7 @@ public class LoginController {
                 newPasswordField.setStyle("-fx-border-color: #EF4444; -fx-border-width: 2;");
             }
         });
-        
+
         // Validation de confirmation
         confirmPasswordField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.isEmpty()) {
@@ -369,7 +377,7 @@ public class LoginController {
                 confirmPasswordField.setStyle("-fx-border-color: #EF4444; -fx-border-width: 2;");
             }
         });
-        
+
         grid.add(new Label("Code:"), 0, 0);
         grid.add(codeField, 1, 0);
         grid.add(new Label("Nouveau mot de passe:"), 0, 1);
@@ -378,46 +386,46 @@ public class LoginController {
         grid.add(requirementsLabel, 0, 3, 2, 1);
         grid.add(new Label("Confirmer:"), 0, 4);
         grid.add(confirmPasswordField, 1, 4);
-        
+
         dialog.getDialogPane().setContent(grid);
-        
+
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == resetButtonType) {
             String enteredCode = codeField.getText().trim();
             String newPassword = newPasswordField.getText().trim();
             String confirmPassword = confirmPasswordField.getText().trim();
-            
+
             // Validation
             if (enteredCode.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
                 showError("Veuillez remplir tous les champs");
                 return;
             }
-            
+
             // Vérifier le code
             if (!enteredCode.equals(expectedCode)) {
                 showError("Code de vérification incorrect");
                 return;
             }
-            
+
             if (!newPassword.equals(confirmPassword)) {
                 showError("Les mots de passe ne correspondent pas");
                 return;
             }
-            
+
             // Valider la force du mot de passe
             PasswordValidator.ValidationResult validation = PasswordValidator.validatePassword(newPassword);
             if (!validation.isValid()) {
                 showError(validation.getMessage());
                 return;
             }
-            
+
             try {
                 // Hasher le nouveau mot de passe
                 String hashedPassword = PasswordValidator.hashPassword(newPassword);
-                
+
                 // Mettre à jour le mot de passe dans la base de données
                 utilisateurService.updatePassword(email, hashedPassword);
-                
+
                 Alert success = new Alert(Alert.AlertType.INFORMATION);
                 success.setTitle("Succès");
                 success.setHeaderText(null);
@@ -478,7 +486,7 @@ public class LoginController {
             }
 
             stage.setScene(scene);
-            stage.setTitle("Stratix - " + user.getNom() + " " + user.getPrenom());
+            stage.setTitle("stratiX - " + user.getNom() + " " + user.getPrenom() + " [" + user.getRole() + "]");
             stage.centerOnScreen();
 
         } catch (IOException e) {
@@ -507,7 +515,7 @@ public class LoginController {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
     }
-    
+
     /**
      * Afficher un compteur à rebours pour le verrouillage
      */
@@ -516,52 +524,52 @@ public class LoginController {
         emailField.setDisable(true);
         passwordField.setDisable(true);
         loginButton.setDisable(true);
-        
+
         // Masquer l'erreur
         errorLabel.setVisible(false);
-        
+
         // Afficher le compteur
         countdownLabel.setVisible(true);
-        
+
         // Arrêter le timeline précédent s'il existe
         if (countdownTimeline != null) {
             countdownTimeline.stop();
         }
-        
+
         // Calculer l'affichage initial
         long initialSeconds = java.time.Duration.between(
-            LocalDateTime.now(), 
-            lockStatus.getUnlockTime()
+                LocalDateTime.now(),
+                lockStatus.getUnlockTime()
         ).getSeconds();
-        
+
         long minutes = initialSeconds / 60;
         long seconds = initialSeconds % 60;
         countdownLabel.setText(String.format("⏱️ Compte verrouillé. Réessayez dans %d:%02d", minutes, seconds));
-        
+
         // Timeline pour mettre à jour le compteur chaque seconde
         countdownTimeline = new Timeline(
-            new KeyFrame(Duration.seconds(1), e -> {
-                long currentSeconds = java.time.Duration.between(
-                    LocalDateTime.now(), 
-                    lockStatus.getUnlockTime()
-                ).getSeconds();
-                
-                if (currentSeconds <= 0) {
-                    // Déverrouillage
-                    countdownTimeline.stop();
-                    countdownLabel.setVisible(false);
-                    emailField.setDisable(false);
-                    passwordField.setDisable(false);
-                    loginButton.setDisable(false);
-                    showError("Vous pouvez maintenant réessayer de vous connecter");
-                } else {
-                    long mins = currentSeconds / 60;
-                    long secs = currentSeconds % 60;
-                    countdownLabel.setText(String.format("⏱️ Compte verrouillé. Réessayez dans %d:%02d", mins, secs));
-                }
-            })
+                new KeyFrame(Duration.seconds(1), e -> {
+                    long currentSeconds = java.time.Duration.between(
+                            LocalDateTime.now(),
+                            lockStatus.getUnlockTime()
+                    ).getSeconds();
+
+                    if (currentSeconds <= 0) {
+                        // Déverrouillage
+                        countdownTimeline.stop();
+                        countdownLabel.setVisible(false);
+                        emailField.setDisable(false);
+                        passwordField.setDisable(false);
+                        loginButton.setDisable(false);
+                        showError("Vous pouvez maintenant réessayer de vous connecter");
+                    } else {
+                        long mins = currentSeconds / 60;
+                        long secs = currentSeconds % 60;
+                        countdownLabel.setText(String.format("⏱️ Compte verrouillé. Réessayez dans %d:%02d", mins, secs));
+                    }
+                })
         );
-        
+
         countdownTimeline.setCycleCount(Animation.INDEFINITE);
         countdownTimeline.play();
     }
@@ -615,13 +623,13 @@ public class LoginController {
 
                             if (user == null) {
                                 user = new Utilisateur(
-                                    googleUser.getLastName() != null ? googleUser.getLastName() : "Google",
-                                    googleUser.getFirstName() != null ? googleUser.getFirstName() : "User",
-                                    googleUser.getEmail(),
-                                    "",
-                                    0,
-                                    utils.PasswordValidator.hashPassword(java.util.UUID.randomUUID().toString()),
-                                    models.Role.EMPLOYE
+                                        googleUser.getLastName() != null ? googleUser.getLastName() : "Google",
+                                        googleUser.getFirstName() != null ? googleUser.getFirstName() : "User",
+                                        googleUser.getEmail(),
+                                        "",
+                                        0,
+                                        utils.PasswordValidator.hashPassword(java.util.UUID.randomUUID().toString()),
+                                        models.Role.EMPLOYE
                                 );
                                 user.setStatut("actif");
                                 utilisateurService.ajouter(user);

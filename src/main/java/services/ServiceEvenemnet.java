@@ -10,6 +10,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.nio.file.*;
+import java.util.UUID;
+import java.io.File;
+
 public class ServiceEvenemnet implements Services<Evenement> {
 
     Connection cnx ;
@@ -20,8 +24,8 @@ public class ServiceEvenemnet implements Services<Evenement> {
     @Override
     public void add(Evenement evenement) {
 
-        String req = "INSERT INTO evenement(type_event, date_event, description, statut, lieu, titre, image_url, latitude, longitude) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; // l values ywalou treated as data mch sql ynajm yexecuta : protection contre l sql injection
+        String req = "INSERT INTO evenement(type_event, date_event, description, statut, lieu, titre, image_url, latitude, longitude, isArchived, recurrence) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // l values ywalou treated as data mch sql ynajm yexecuta : protection contre l sql injection
 
         try (PreparedStatement pst = cnx.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);) {
 
@@ -34,6 +38,9 @@ public class ServiceEvenemnet implements Services<Evenement> {
             pst.setString(7, evenement.getImageUrl());
             pst.setDouble(8, evenement.getLatitude());
             pst.setDouble(9, evenement.getLongitude());
+
+            pst.setInt(10, 0);          // 0 = false (not archived)
+            pst.setString(11, "none");
             pst.executeUpdate();
 
 
@@ -49,7 +56,7 @@ public class ServiceEvenemnet implements Services<Evenement> {
     @Override
     public void update(Evenement evenement) {
 
-        String req = "update evenement set type_event=? , date_event=? , description=? , statut=? , lieu=? , titre=?, image_url=?, latitude=?, longitude=?"+
+        String req = "update evenement set type_event=? , date_event=? , description=? , statut=? , lieu=? , titre=?, image_url=?, latitude=?, longitude=?, recurrence=? "+
                 " where id=?";
         try{
             PreparedStatement pst = cnx.prepareStatement(req);
@@ -63,7 +70,8 @@ public class ServiceEvenemnet implements Services<Evenement> {
             pst.setString(7, evenement.getImageUrl());
             pst.setDouble(8, evenement.getLatitude());
             pst.setDouble(9, evenement.getLongitude());
-            pst.setInt(10, evenement.getId());
+            pst.setString(10, "none"); // Keeps recurrence valid
+            pst.setInt(11, evenement.getId());
 
 
             pst.executeUpdate();
@@ -288,6 +296,23 @@ public class ServiceEvenemnet implements Services<Evenement> {
             System.out.println(ex.getMessage());
         }
         return list;
+    }
+
+
+    public String saveImageToProject(File sourceFile) throws Exception {
+        String uploadPath = "C:/Users/islem/stratix_web/public/uploads/events/";
+
+        String extension = "";
+        int i = sourceFile.getName().lastIndexOf('.');
+        if (i > 0) { extension = sourceFile.getName().substring(i); }
+
+        String newFileName = UUID.randomUUID().toString().substring(0, 13) + extension;
+
+        Path destination = Paths.get(uploadPath + newFileName);
+
+        Files.copy(sourceFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+
+        return newFileName;
     }
 
 

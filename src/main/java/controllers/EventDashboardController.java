@@ -38,6 +38,8 @@ public class EventDashboardController {
     @FXML private FlowPane eventContainer;
     @FXML private TextField searchField;
     @FXML private ComboBox<String> filterStatusCombo;
+    private final String PROJECT_UPLOAD_PATH = "file:/C:/Users/islem/stratix_web/public";
+
 
 
 
@@ -91,17 +93,28 @@ public class EventDashboardController {
         card.setPadding(new Insets(0, 0, 15, 0));
         card.setAlignment(Pos.TOP_CENTER);
 
+
         ImageView imageView = new ImageView();
         try {
-            String imagePath = (e.getImageUrl() == null || e.getImageUrl().isEmpty())
-                    ? "/images/placeholder.png" : e.getImageUrl();
+            String imagePath;
+            if (e.getImageUrl() == null || e.getImageUrl().isEmpty()) {
+                imagePath = getClass().getResource("/images/placeholder.png").toExternalForm();
+            } else {
+
+                imagePath = PROJECT_UPLOAD_PATH + e.getImageUrl();
+            }
+
             Image img = new Image(imagePath, 300, 180, true, true);
             imageView.setImage(img);
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            System.out.println("Erreur chargement image: " + ex.getMessage());
+            try {
+                imageView.setImage(new Image(getClass().getResource("/images/placeholder.png").toExternalForm()));
+            } catch (Exception ignored) {}
         }
-        imageView.setFitWidth(300);
-        imageView.setFitHeight(180);
+
+
+
 
         javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle(300, 180);
         clip.setArcWidth(30);

@@ -16,8 +16,8 @@ import models.enums.EventType;
 import netscape.javascript.JSObject;
 import services.ServiceEvenemnet;
 import javafx.stage.FileChooser;
-
 import java.io.File;
+
 
 
 import java.io.IOException;
@@ -31,6 +31,8 @@ public class AddEventController {
     @FXML private TextField imageUrlField;
     @FXML private TextField mapSearchField;
     @FXML private WebView mapPicker;
+    private File selectedImageFile;
+
 
     private final JavaConnector bridge = new JavaConnector();
     private double selectedLat = 0;
@@ -119,14 +121,14 @@ public class AddEventController {
     private void chooseImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choisir une affiche");
-
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif")
         );
 
         File selectedFile = fileChooser.showOpenDialog(titreField.getScene().getWindow());
         if (selectedFile != null) {
-            imageUrlField.setText(selectedFile.toURI().toString());
+            this.selectedImageFile = selectedFile; // Store the file object
+            imageUrlField.setText(selectedFile.getName()); // Show just the name in the UI
         }
     }
 
@@ -168,7 +170,15 @@ public class AddEventController {
         e.setDate_event(datePicker.getValue());
         e.setType_event(typeCombo.getValue());
         e.setStatut(statusCombo.getValue());
-        e.setImageUrl(imageUrlField.getText());
+
+        if (selectedImageFile != null) {
+            String dbPath = processAndCopyImage(selectedImageFile);
+            if (dbPath != null) {
+                e.setImageUrl(dbPath);
+            }
+        } else {
+            e.setImageUrl(imageUrlField.getText()); // Fallback
+        }
         e.setLatitude(selectedLat);
         e.setLongitude(selectedLng);
         System.out.println("Controller sending to Service: Lat=" + e.getLatitude() + " Lng=" + e.getLongitude());
@@ -207,6 +217,33 @@ public class AddEventController {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    private String processAndCopyImage(File sourceFile) {
+        try {
+            // Path to your Symfony project
+            String uploadDir = "C:/Users/islem/stratix_web/public/uploads/events/";
+
+            // Ensure directory exists
+            File dir = new File(uploadDir);
+            if (!dir.exists()) dir.mkdirs();
+
+            // Create a unique filename to avoid conflicts (like Symfony does)
+            String extension = sourceFile.getName().substring(sourceFile.getName().lastIndexOf("."));
+            String uniqueName = java.util.UUID.randomUUID().toString().substring(0, 13) + extension;
+
+            java.nio.file.Path targetPath = java.nio.file.Paths.get(uploadDir + uniqueName);
+
+            // Physically copy the file
+            java.nio.file.Files.copy(sourceFile.toPath(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            // Return the relative path that Symfony expects
+            return "/uploads/events/" + uniqueName;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

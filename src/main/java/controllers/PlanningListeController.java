@@ -19,14 +19,15 @@ import javafx.collections.transformation.FilteredList;
 import javafx.stage.FileChooser;
 
 import models.Planning;
-import models.Employe;
+import models.Utilisateur;  // ← CHANGER: Utilisateur au lieu de Employe
 import services.SERVICEPlanning;
-import services.EmployeeService;
+import services.UtilisateurService;  // ← CHANGER
 import api.WeatherAPI;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -48,7 +49,7 @@ public class PlanningListeController implements Initializable {
     @FXML private Label lblHeaderStats;
 
     private SERVICEPlanning planningService;
-    private EmployeeService employeService;
+    private UtilisateurService utilisateurService;  // ← CHANGER
     private ObservableList<Planning> planningList = FXCollections.observableArrayList();
     private FilteredList<Planning> filteredData;
 
@@ -57,10 +58,10 @@ public class PlanningListeController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        System.out.println("=== Initialisation PlanningListeController (Version Compacte) ===");
+        System.out.println("=== Initialisation PlanningListeController (Version Utilisateur) ===");
 
         planningService = new SERVICEPlanning();
-        employeService = new EmployeeService();
+        utilisateurService = UtilisateurService.getInstance();  // ← CHANGER
 
         chargerPlannings();
     }
@@ -104,6 +105,19 @@ public class PlanningListeController implements Initializable {
         }
     }
 
+    private String getEmployeName(int employeId) {
+        try {
+            Utilisateur u = utilisateurService.getById(employeId);
+            if (u != null) {
+                // ✅ Affiche "Prénom Nom" comme Symfony
+                return u.getPrenom() + " " + u.getNom();
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur chargement employé " + employeId + ": " + e.getMessage());
+        }
+        return "Employé #" + employeId;
+    }
+
     private HBox createPlanningCard(Planning planning) {
         HBox card = new HBox(12);
         card.setPadding(new Insets(12, 15, 12, 15));
@@ -130,14 +144,13 @@ public class PlanningListeController implements Initializable {
         // Employé et type
         HBox headerBox = new HBox(8);
 
-        Employe emp = employeService.getEmployeById(planning.getEmployeId());
-        String employeName = emp != null ? emp.getUsername() : "Employé " + planning.getEmployeId();
+        String employeName = getEmployeName(planning.getEmployeId());
 
         Label employeLabel = new Label(employeName);
         employeLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
         employeLabel.setTextFill(javafx.scene.paint.Color.web("#0f172a"));
 
-        Label typeBadge = new Label(planning.getTypeShift());
+        Label typeBadge = new Label(getDisplayType(planning.getTypeShift()));
         typeBadge.setStyle(getBadgeStyle(planning.getTypeShift()));
         typeBadge.setPadding(new Insets(2, 8, 2, 8));
         typeBadge.setFont(Font.font("System", FontWeight.BOLD, 10));
@@ -188,13 +201,26 @@ public class PlanningListeController implements Initializable {
         return card;
     }
 
+    private String getDisplayType(String type) {
+        if (type == null) return "AUTRE";
+        switch(type) {
+            case "JOUR": return "JOUR";
+            case "SOIR": return "SOIR";
+            case "NUIT": return "NUIT";
+            case "CONGÉ": return "CONGÉ";
+            case "MALADIE": return "MALADIE";
+            case "FORMATION": return "FORMATION";
+            default: return type.toUpperCase();
+        }
+    }
+
     private String getTypeColor(String type) {
         if (type == null) return "-fx-background-color: #94a3b8; -fx-background-radius: 2;";
         switch(type) {
             case "JOUR": return "-fx-background-color: #f6c23e; -fx-background-radius: 2;";
             case "SOIR": return "-fx-background-color: #3b82f6; -fx-background-radius: 2;";
             case "NUIT": return "-fx-background-color: #1e293b; -fx-background-radius: 2;";
-            case "CONGE": return "-fx-background-color: #1cc88a; -fx-background-radius: 2;";
+            case "CONGÉ": return "-fx-background-color: #1cc88a; -fx-background-radius: 2;";
             case "MALADIE": return "-fx-background-color: #e74a3b; -fx-background-radius: 2;";
             case "FORMATION": return "-fx-background-color: #36b9cc; -fx-background-radius: 2;";
             default: return "-fx-background-color: #94a3b8; -fx-background-radius: 2;";
@@ -207,7 +233,7 @@ public class PlanningListeController implements Initializable {
             case "JOUR": return "☀️";
             case "SOIR": return "🌆";
             case "NUIT": return "🌙";
-            case "CONGE": return "🌴";
+            case "CONGÉ": return "🌴";
             case "MALADIE": return "🤒";
             case "FORMATION": return "🎓";
             default: return "📋";
@@ -220,7 +246,7 @@ public class PlanningListeController implements Initializable {
             case "JOUR": return "-fx-background-color: #fef3c7; -fx-text-fill: #92400e; -fx-background-radius: 12;";
             case "SOIR": return "-fx-background-color: #dbeafe; -fx-text-fill: #1e40af; -fx-background-radius: 12;";
             case "NUIT": return "-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-background-radius: 12;";
-            case "CONGE": return "-fx-background-color: #d1fae5; -fx-text-fill: #065f46; -fx-background-radius: 12;";
+            case "CONGÉ": return "-fx-background-color: #d1fae5; -fx-text-fill: #065f46; -fx-background-radius: 12;";
             case "MALADIE": return "-fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-background-radius: 12;";
             case "FORMATION": return "-fx-background-color: #e0f2fe; -fx-text-fill: #0369a1; -fx-background-radius: 12;";
             default: return "-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 12;";
@@ -236,7 +262,7 @@ public class PlanningListeController implements Initializable {
                 case "JOUR": jour++; break;
                 case "SOIR": soir++; break;
                 case "NUIT": nuit++; break;
-                case "CONGE": conge++; break;
+                case "CONGÉ": conge++; break;
                 case "MALADIE": maladie++; break;
                 case "FORMATION": formation++; break;
                 default: autre++;
@@ -270,12 +296,12 @@ public class PlanningListeController implements Initializable {
     }
 
     private void supprimerPlanning(Planning planning) {
+        String employeName = getEmployeName(planning.getEmployeId());
+
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
         confirm.setHeaderText("Supprimer ce planning ?");
-        confirm.setContentText("Planning du " + planning.getDate() + " pour " +
-                (employeService.getEmployeById(planning.getEmployeId()) != null ?
-                        employeService.getEmployeById(planning.getEmployeId()).getUsername() : "Employé " + planning.getEmployeId()));
+        confirm.setContentText("Planning du " + planning.getDate() + " pour " + employeName);
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -288,11 +314,10 @@ public class PlanningListeController implements Initializable {
     private void afficherMeteo(Planning planning) {
         try {
             String date = planning.getDate().toString();
-            Employe emp = employeService.getEmployeById(planning.getEmployeId());
-            String nom = (emp != null) ? emp.getUsername() : "Employé " + planning.getEmployeId();
+            String employeName = getEmployeName(planning.getEmployeId());
             String dateF = planning.getDate().toLocalDate().format(dateFormatter);
             String meteo = WeatherAPI.getWeatherForDate(date);
-            lblMeteo.setText("🌤️ " + nom + " le " + dateF + " : " + meteo);
+            lblMeteo.setText("🌤️ " + employeName + " le " + dateF + " : " + meteo);
         } catch (Exception e) {
             lblMeteo.setText("Sélectionnez un planning pour voir la météo");
         }
@@ -403,4 +428,4 @@ public class PlanningListeController implements Initializable {
         alert.setContentText(message);
         alert.showAndWait();
     }
-}//
+}
