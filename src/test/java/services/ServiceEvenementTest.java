@@ -1,6 +1,6 @@
 package services;
 
-import Services.ServiceEvenemnet;
+import services.ServiceEvenemnet;
 import models.Evenement;
 import models.enums.EventStatus;
 import models.enums.EventType;

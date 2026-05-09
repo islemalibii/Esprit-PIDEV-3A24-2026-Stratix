@@ -1,6 +1,6 @@
 package services;
 
-import Services.service_produit;
+import services.service_produit;
 import models.produit;
 import org.junit.jupiter.api.*;
 

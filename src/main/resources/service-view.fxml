@@ -60,7 +60,7 @@
 
                 <VBox styleClass="user-section" spacing="10">
                     <Separator styleClass="user-separator"/>
-                    <HBox styleClass="user-info-container" spacing="12" alignment="CENTER_LEFT">
+                    <HBox fx:id="userProfileSection" styleClass="user-info-container user-profile-section" spacing="12" alignment="CENTER_LEFT" onMouseClicked="#handleProfileClick">
                         <Label text="👤" fx:id="lblUserAvatar" styleClass="user-avatar-large"/>
                         <VBox spacing="3">
                             <Label fx:id="lblUserName" text="Utilisateur" styleClass="user-name-large"/>

@@ -17,9 +17,9 @@ public class FormulaireRessourceController {
     @FXML
     private ComboBox<String> typeCombo;
     @FXML
-    private VBox autreTypeContainer; // NOUVEAU: Conteneur pour le type personnalisé
+    private VBox autreTypeContainer; // Conteneur pour le type personnalisé
     @FXML
-    private TextField autreTypeField; // NOUVEAU: Champ pour saisir le type personnalisé
+    private TextField autreTypeField; // Champ pour saisir le type personnalisé
     @FXML
     private TextField quantiteField;
     @FXML
@@ -50,26 +50,31 @@ public class FormulaireRessourceController {
         // Initialisation de la ComboBox
         typeCombo.setItems(FXCollections.observableArrayList(typesPredifinis));
 
-        // Cacher le champ de type personnalisé au démarrage
-        autreTypeContainer.setVisible(false);
-        autreTypeContainer.setManaged(false);
+        // Vérifier que les composants existent (sécurité)
+        if (autreTypeContainer != null && autreTypeField != null) {
+            // Cacher le champ de type personnalisé au démarrage
+            autreTypeContainer.setVisible(false);
+            autreTypeContainer.setManaged(false);
 
-        // Ajouter un listener pour gérer la sélection "Autre"
-        typeCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if ("Autre".equals(newVal)) {
-                // Afficher le champ de type personnalisé
-                autreTypeContainer.setVisible(true);
-                autreTypeContainer.setManaged(true);
+            // Ajouter un listener pour gérer la sélection "Autre"
+            typeCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                if ("Autre".equals(newVal)) {
+                    // Afficher le champ de type personnalisé
+                    autreTypeContainer.setVisible(true);
+                    autreTypeContainer.setManaged(true);
 
-                // Mettre le focus sur le champ personnalisé
-                autreTypeField.requestFocus();
-                autreTypeField.clear();
-            } else {
-                // Cacher le champ de type personnalisé
-                autreTypeContainer.setVisible(false);
-                autreTypeContainer.setManaged(false);
-            }
-        });
+                    // Mettre le focus sur le champ personnalisé
+                    autreTypeField.requestFocus();
+                    autreTypeField.clear();
+                } else {
+                    // Cacher le champ de type personnalisé
+                    autreTypeContainer.setVisible(false);
+                    autreTypeContainer.setManaged(false);
+                }
+            });
+        } else {
+            System.err.println("Attention: les composants autreTypeContainer ou autreTypeField sont null");
+        }
     }
 
     public void setModeAjout() {
@@ -80,9 +85,13 @@ public class FormulaireRessourceController {
         idField.clear();
         nomField.clear();
         typeCombo.getSelectionModel().clearSelection();
-        autreTypeContainer.setVisible(false);
-        autreTypeContainer.setManaged(false);
-        autreTypeField.clear();
+        if (autreTypeContainer != null) {
+            autreTypeContainer.setVisible(false);
+            autreTypeContainer.setManaged(false);
+        }
+        if (autreTypeField != null) {
+            autreTypeField.clear();
+        }
         quantiteField.clear();
         fournisseurField.clear();
     }
@@ -109,14 +118,20 @@ public class FormulaireRessourceController {
             if (estPredifini) {
                 // Type prédéfini
                 typeCombo.setValue(typeExistant);
-                autreTypeContainer.setVisible(false);
-                autreTypeContainer.setManaged(false);
+                if (autreTypeContainer != null) {
+                    autreTypeContainer.setVisible(false);
+                    autreTypeContainer.setManaged(false);
+                }
             } else {
                 // Type personnalisé
                 typeCombo.setValue("Autre");
-                autreTypeContainer.setVisible(true);
-                autreTypeContainer.setManaged(true);
-                autreTypeField.setText(typeExistant);
+                if (autreTypeContainer != null) {
+                    autreTypeContainer.setVisible(true);
+                    autreTypeContainer.setManaged(true);
+                }
+                if (autreTypeField != null) {
+                    autreTypeField.setText(typeExistant);
+                }
             }
         }
 
@@ -136,12 +151,13 @@ public class FormulaireRessourceController {
 
         if ("Autre".equals(selection)) {
             // Retourner la valeur du champ personnalisé
-            String autreType = autreTypeField.getText();
-            if (autreType != null && !autreType.trim().isEmpty()) {
-                return autreType.trim();
-            } else {
-                return null; // Pas de type saisi
+            if (autreTypeField != null) {
+                String autreType = autreTypeField.getText();
+                if (autreType != null && !autreType.trim().isEmpty()) {
+                    return autreType.trim();
+                }
             }
+            return null; // Pas de type saisi
         } else {
             // Retourner le type sélectionné
             return selection;
@@ -185,6 +201,7 @@ public class FormulaireRessourceController {
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Erreur",
                     "Erreur : " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

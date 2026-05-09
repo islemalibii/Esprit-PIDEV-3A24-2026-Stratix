@@ -15,6 +15,8 @@ public class Evenement {
     private List<Ressource> Ressources = new ArrayList<>();
     private boolean isArchived;
     private String image_url;
+    private double latitude;
+    private double longitude;
 
     public Evenement() {}
 
@@ -103,6 +105,21 @@ public class Evenement {
     }
     public void setImageUrl(String image_url) {
         this.image_url = image_url;
+    }
+
+
+    public double getLatitude() {
+        return latitude;
+    }
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     @Override

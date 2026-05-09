@@ -13,6 +13,7 @@ public class produit {
     private String date_creation;      // Date d'ajout dans le système
     private String ressources_necessaires;
     private String image_path;
+    private String details;
 
     // NOUVEAUX ATTRIBUTS
     private String date_fabrication;    // Date de fabrication
@@ -27,7 +28,7 @@ public class produit {
                    int stock_actuel, int stock_min, String date_creation,
                    String ressources_necessaires, String image_path,
                    String date_fabrication, String date_peremption,
-                   String date_garantie, String type_produit) {
+                   String date_garantie, String type_produit,String details) {
         this.id = id;
         this.nom = nom;
         this.description = description;
@@ -42,6 +43,7 @@ public class produit {
         this.date_peremption = date_peremption;
         this.date_garantie = date_garantie;
         this.type_produit = type_produit;
+        this.details = details;
     }
 
     // Getters et Setters existants
@@ -124,6 +126,8 @@ public class produit {
         if (estBientotPerime(30)) return "Bientôt périmé (moins de 30 jours)";
         return "Valide";
     }
+    public String getDetails() { return details; }
+    public void setDetails(String details) { this.details = details; }
 
     @Override
     public String toString() {
@@ -136,6 +140,7 @@ public class produit {
                 ", fabrication='" + date_fabrication + '\'' +
                 ", péremption='" + date_peremption + '\'' +
                 ", garantie='" + date_garantie + '\'' +
+                ", Détails='" + details + '\''+
                 '}';
     }
 }

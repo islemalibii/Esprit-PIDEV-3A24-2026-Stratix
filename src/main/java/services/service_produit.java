@@ -12,8 +12,8 @@ public class service_produit implements service<produit> {
 
     @Override
     public void add(produit p) {
-        // CORRECTION: Supprimer type_produit de la requête
-        String req = "INSERT INTO produit(nom, description, categorie, prix, stock_actuel, stock_min, date_creation, ressources_necessaires, image_path, date_fabrication, date_peremption, date_garantie) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+        // AJOUT du champ details dans la requête
+        String req = "INSERT INTO produit(nom, description, categorie, prix, stock_actuel, stock_min, date_creation, ressources_necessaires, image_path, date_fabrication, date_peremption, date_garantie, details) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try {
             Connection cnx = MyDataBase.getInstance().getCnx();
@@ -54,6 +54,13 @@ public class service_produit implements service<produit> {
                 ps.setNull(12, java.sql.Types.DATE);
             }
 
+            // Gestion des détails (NOUVEAU)
+            if (p.getDetails() != null && !p.getDetails().isEmpty()) {
+                ps.setString(13, p.getDetails());
+            } else {
+                ps.setNull(13, java.sql.Types.VARCHAR);
+            }
+
             int affectedRows = ps.executeUpdate();
 
             if (affectedRows > 0) {
@@ -73,8 +80,8 @@ public class service_produit implements service<produit> {
     @Override
     public List<produit> getAll() {
         List<produit> list = new ArrayList<>();
-        // CORRECTION: Enlever type_produit de la requête SELECT
-        String req = "SELECT id, nom, description, categorie, prix, stock_actuel, stock_min, date_creation, ressources_necessaires, image_path, date_fabrication, date_peremption, date_garantie FROM produit";
+        // AJOUT du champ details dans la requête SELECT
+        String req = "SELECT id, nom, description, categorie, prix, stock_actuel, stock_min, date_creation, ressources_necessaires, image_path, date_fabrication, date_peremption, date_garantie, details FROM produit";
 
         try {
             Connection cnx = MyDataBase.getInstance().getCnx();
@@ -122,6 +129,13 @@ public class service_produit implements service<produit> {
                     p.setDate_garantie(dateGar.toString());
                 }
 
+                // Détails (NOUVEAU)
+                try {
+                    p.setDetails(rs.getString("details"));
+                } catch (SQLException e) {
+                    p.setDetails(null);
+                }
+
                 list.add(p);
             }
 
@@ -135,8 +149,8 @@ public class service_produit implements service<produit> {
 
     @Override
     public void update(produit p) {
-        // CORRECTION: Supprimer type_produit de la requête UPDATE
-        String req = "UPDATE produit SET nom=?, description=?, categorie=?, prix=?, stock_actuel=?, stock_min=?, date_creation=?, ressources_necessaires=?, image_path=?, date_fabrication=?, date_peremption=?, date_garantie=? WHERE id=?";
+        // AJOUT du champ details dans la requête UPDATE
+        String req = "UPDATE produit SET nom=?, description=?, categorie=?, prix=?, stock_actuel=?, stock_min=?, date_creation=?, ressources_necessaires=?, image_path=?, date_fabrication=?, date_peremption=?, date_garantie=?, details=? WHERE id=?";
 
         try {
             Connection cnx = MyDataBase.getInstance().getCnx();
@@ -177,7 +191,14 @@ public class service_produit implements service<produit> {
                 ps.setNull(12, java.sql.Types.DATE);
             }
 
-            ps.setInt(13, p.getId());
+            // Détails (NOUVEAU)
+            if (p.getDetails() != null && !p.getDetails().isEmpty()) {
+                ps.setString(13, p.getDetails());
+            } else {
+                ps.setNull(13, java.sql.Types.VARCHAR);
+            }
+
+            ps.setInt(14, p.getId());
 
             int rows = ps.executeUpdate();
 

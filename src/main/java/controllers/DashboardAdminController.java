@@ -1,6 +1,8 @@
 package controllers;
 
+import javafx.scene.Node;
 import services.UtilisateurService;
+import services.ChatbotService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -24,7 +26,7 @@ public class DashboardAdminController {
 
     @FXML
     private Label welcomeLabel;
-    
+
     @FXML
     private Label avatarLabel;
 
@@ -43,21 +45,54 @@ public class DashboardAdminController {
     @FXML
     private Button btnEvenements;
 
+    @FXML
+    private HBox userProfileSection;
+
+    @FXML
+    private VBox chatbotContainer;
+
+    @FXML
+    private VBox chatMessagesContainer;
+
+    @FXML
+    private TextField chatInputField;
+
+    @FXML
+    private ScrollPane chatScrollPane;
+
+    @FXML
+    private Button chatbotButton;
+    @FXML
+    private BorderPane main;
+
     private Utilisateur currentUser;
     private UtilisateurService utilisateurService;
+    private services.ChatbotService chatbotService;
 
     private String currentView = "utilisateurs";
     private List<Utilisateur> currentData;
+    private Node dashboardHomeView;
+
+
 
     public void initialize() {
         utilisateurService = UtilisateurService.getInstance();
+        chatbotService = services.ChatbotService.getInstance();
+        dashboardHomeView = main.getCenter();
         loadUtilisateurs();
+
+
+        // Recherche en temps réel
+        searchField.textProperty().addListener((obs, old, newVal) -> handleSearch(null));
+
+        // Message de bienvenue du chatbot
+        addBotMessage("👋 Bonjour! Je suis votre assistant. Tapez 'aide' pour voir ce que je peux faire.");
     }
 
     public void setCurrentUser(Utilisateur user) {
         this.currentUser = user;
         welcomeLabel.setText("Bienvenue, " + user.getNom() + " " + user.getPrenom());
-        
+
         // Mettre à jour l'avatar avec la première lettre du prénom
         if (user.getPrenom() != null && !user.getPrenom().isEmpty()) {
             avatarLabel.setText(user.getPrenom().substring(0, 1).toUpperCase());
@@ -66,6 +101,7 @@ public class DashboardAdminController {
 
     @FXML
     void showUtilisateurs(ActionEvent event) {
+        main.setCenter(dashboardHomeView);
         currentView = "utilisateurs";
         titleLabel.setText("Gestion des Utilisateurs");
         loadUtilisateurs();
@@ -73,6 +109,7 @@ public class DashboardAdminController {
 
     @FXML
     void showEmployes(ActionEvent event) {
+        main.setCenter(dashboardHomeView);
         currentView = "employes";
         titleLabel.setText("Gestion des Employés");
         loadEmployes();
@@ -80,6 +117,7 @@ public class DashboardAdminController {
 
     @FXML
     void showAdmins(ActionEvent event) {
+        main.setCenter(dashboardHomeView);
         currentView = "admins";
         titleLabel.setText("Gestion des Admins");
         loadAdmins();
@@ -87,6 +125,7 @@ public class DashboardAdminController {
 
     @FXML
     void showCEOs(ActionEvent event) {
+        main.setCenter(dashboardHomeView);
         currentView = "ceos";
         titleLabel.setText("Gestion des CEOs");
         loadCEOs();
@@ -94,6 +133,7 @@ public class DashboardAdminController {
 
     @FXML
     void showResponsables(ActionEvent event) {
+        main.setCenter(dashboardHomeView);
         currentView = "responsables";
         titleLabel.setText("Gestion des Responsables");
         loadResponsables();
@@ -114,8 +154,8 @@ public class DashboardAdminController {
 
         List<Utilisateur> filteredData = currentData.stream()
                 .filter(user -> user.getNom().toLowerCase().contains(searchText) ||
-                               user.getPrenom().toLowerCase().contains(searchText) ||
-                               user.getEmail().toLowerCase().contains(searchText))
+                        user.getPrenom().toLowerCase().contains(searchText) ||
+                        user.getEmail().toLowerCase().contains(searchText))
                 .collect(Collectors.toList());
 
         displayCards(filteredData);
@@ -125,7 +165,7 @@ public class DashboardAdminController {
     void handleLogout(ActionEvent event) {
         // Supprimer la session
         SessionManager.getInstance().logout();
-        
+
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/login.fxml"));
             Stage stage = (Stage) logoutButton.getScene().getWindow();
@@ -136,6 +176,378 @@ public class DashboardAdminController {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    void handleProfileClick() {
+        if (currentUser == null) return;
+
+        javafx.scene.control.Dialog<Void> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle("Profil Utilisateur");
+        dialog.setHeaderText(null);
+
+        // Container principal
+        javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(25);
+        content.setPadding(new javafx.geometry.Insets(30));
+        content.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+        content.setStyle("-fx-background-color: #F7FAFC;");
+
+        // Avatar circulaire centré
+        javafx.scene.layout.StackPane avatarContainer = new javafx.scene.layout.StackPane();
+        javafx.scene.shape.Circle avatarCircle = new javafx.scene.shape.Circle(60);
+        avatarCircle.setFill(javafx.scene.paint.Color.web("#4299E1"));
+        avatarCircle.setEffect(new javafx.scene.effect.DropShadow(15, javafx.scene.paint.Color.rgb(66, 153, 225, 0.4)));
+
+        javafx.scene.control.Label avatarText = new javafx.scene.control.Label(
+                currentUser.getNom().substring(0, 1).toUpperCase() + currentUser.getPrenom().substring(0, 1).toUpperCase()
+        );
+        avatarText.setStyle("-fx-text-fill: white; -fx-font-size: 36px; -fx-font-weight: bold;");
+        avatarContainer.getChildren().addAll(avatarCircle, avatarText);
+
+        // Nom complet
+        javafx.scene.control.Label nameLabel = new javafx.scene.control.Label(currentUser.getNom() + " " + currentUser.getPrenom());
+        nameLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2D3748;");
+
+        // Badge rôle
+        javafx.scene.control.Label roleLabel = new javafx.scene.control.Label(getRoleDisplayName(currentUser.getRole()));
+        roleLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: white; -fx-background-color: #4299E1; " +
+                "-fx-background-radius: 20px; -fx-padding: 8px 20px; -fx-font-weight: bold;");
+
+        // Card Email
+        javafx.scene.layout.HBox emailCard = createInfoCard("📧", "Email:", currentUser.getEmail());
+
+        // Card Téléphone
+        javafx.scene.layout.HBox phoneCard = createInfoCard("📞", "Téléphone:", currentUser.getTel());
+
+        // Container pour CIN et Statut (côte à côte)
+        javafx.scene.layout.HBox bottomRow = new javafx.scene.layout.HBox(15);
+        bottomRow.setAlignment(javafx.geometry.Pos.CENTER);
+
+        // Card CIN
+        javafx.scene.layout.VBox cinCard = new javafx.scene.layout.VBox(8);
+        cinCard.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        cinCard.setStyle("-fx-background-color: white; -fx-background-radius: 12px; " +
+                "-fx-padding: 20px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);");
+        cinCard.setPrefWidth(250);
+
+        javafx.scene.layout.HBox cinHeader = new javafx.scene.layout.HBox(8);
+        cinHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        javafx.scene.control.Label cinIcon = new javafx.scene.control.Label("🆔");
+        cinIcon.setStyle("-fx-font-size: 20px;");
+        javafx.scene.control.Label cinTitle = new javafx.scene.control.Label("CIN:");
+        cinTitle.setStyle("-fx-font-size: 14px; -fx-text-fill: #718096; -fx-font-weight: bold;");
+        cinHeader.getChildren().addAll(cinIcon, cinTitle);
+
+        javafx.scene.control.Label cinValue = new javafx.scene.control.Label(String.valueOf(currentUser.getCin()));
+        cinValue.setStyle("-fx-font-size: 18px; -fx-text-fill: #2D3748; -fx-font-weight: bold; -fx-padding: 5 0 0 28;");
+
+        cinCard.getChildren().addAll(cinHeader, cinValue);
+
+        // Card Statut
+        javafx.scene.layout.VBox statutCard = new javafx.scene.layout.VBox(8);
+        statutCard.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        String statutBg = currentUser.isActif() ? "#D1FAE5" : "#FEE2E2";
+        String statutColor = currentUser.isActif() ? "#065F46" : "#991B1B";
+        statutCard.setStyle("-fx-background-color: " + statutBg + "; -fx-background-radius: 12px; " +
+                "-fx-padding: 20px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);");
+        statutCard.setPrefWidth(250);
+
+        javafx.scene.layout.HBox statutHeader = new javafx.scene.layout.HBox(8);
+        statutHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        javafx.scene.control.Label statutIcon = new javafx.scene.control.Label("●");
+        statutIcon.setStyle("-fx-font-size: 20px; -fx-text-fill: " + statutColor + ";");
+        javafx.scene.control.Label statutTitle = new javafx.scene.control.Label("Statut:");
+        statutTitle.setStyle("-fx-font-size: 14px; -fx-text-fill: " + statutColor + "; -fx-font-weight: bold;");
+        statutHeader.getChildren().addAll(statutIcon, statutTitle);
+
+        javafx.scene.control.Label statutValue = new javafx.scene.control.Label(currentUser.isActif() ? "ACTIF" : "INACTIF");
+        statutValue.setStyle("-fx-font-size: 18px; -fx-text-fill: " + statutColor + "; -fx-font-weight: bold; -fx-padding: 5 0 0 28;");
+
+        statutCard.getChildren().addAll(statutHeader, statutValue);
+
+        bottomRow.getChildren().addAll(cinCard, statutCard);
+
+        // Boutons d'action
+        javafx.scene.layout.HBox actionsBox = new javafx.scene.layout.HBox(15);
+        actionsBox.setAlignment(javafx.geometry.Pos.CENTER);
+
+        javafx.scene.control.Button btnEdit = new javafx.scene.control.Button("✏️ Modifier mes informations");
+        btnEdit.setStyle("-fx-background-color: #4299E1; -fx-text-fill: white; -fx-font-weight: bold; " +
+                "-fx-background-radius: 10px; -fx-padding: 12px 30px; -fx-cursor: hand; -fx-font-size: 14px;");
+        btnEdit.setOnAction(e -> {
+            dialog.close();
+            showEditProfileStage(currentUser);
+        });
+
+        javafx.scene.control.Button btnChangePassword = new javafx.scene.control.Button("🔒 Changer mot de passe");
+        btnChangePassword.setStyle("-fx-background-color: #F59E0B; -fx-text-fill: white; -fx-font-weight: bold; " +
+                "-fx-background-radius: 10px; -fx-padding: 12px 30px; -fx-cursor: hand; -fx-font-size: 14px;");
+        btnChangePassword.setOnAction(e -> {
+            dialog.close();
+            showSimplePasswordDialog(currentUser);
+        });
+
+        actionsBox.getChildren().addAll(btnEdit, btnChangePassword);
+
+        // Ajouter tous les éléments
+        content.getChildren().addAll(avatarContainer, nameLabel, roleLabel, emailCard, phoneCard, bottomRow, actionsBox);
+
+        dialog.getDialogPane().setContent(content);
+
+        // Bouton Fermer
+        javafx.scene.control.ButtonType closeButtonType = new javafx.scene.control.ButtonType("Fermer", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().add(closeButtonType);
+
+        dialog.getDialogPane().setStyle("-fx-background-color: #F7FAFC; -fx-border-radius: 15px; -fx-background-radius: 15px;");
+        dialog.getDialogPane().setPrefWidth(600);
+
+        javafx.scene.Node closeButton = dialog.getDialogPane().lookupButton(closeButtonType);
+        closeButton.setStyle("-fx-background-color: #4299E1; -fx-text-fill: white; -fx-font-weight: bold; " +
+                "-fx-background-radius: 10px; -fx-padding: 12px 40px; -fx-cursor: hand; -fx-font-size: 14px;");
+
+        dialog.showAndWait();
+    }
+
+    private void addProfileRow(javafx.scene.layout.GridPane grid, int row, String label, String value) {
+        javafx.scene.control.Label labelNode = new javafx.scene.control.Label(label);
+        labelNode.setStyle("-fx-font-weight: bold; -fx-text-fill: #4A5568; -fx-font-size: 14px;");
+
+        javafx.scene.control.Label valueNode = new javafx.scene.control.Label(value);
+        valueNode.setStyle("-fx-text-fill: #2D3748; -fx-font-size: 14px; -fx-background-color: #F7FAFC; -fx-background-radius: 6px; -fx-padding: 8px 12px;");
+        valueNode.setWrapText(true);
+        valueNode.setMaxWidth(280);
+
+        grid.add(labelNode, 0, row);
+        grid.add(valueNode, 1, row);
+    }
+
+    private String getRoleDisplayName(models.Role role) {
+        switch (role) {
+            case ADMIN: return "Administrateur";
+            case CEO: return "Directeur Général";
+            case EMPLOYE: return "Employé";
+            case RESPONSABLE_RH: return "Responsable RH";
+            case RESPONSABLE_PROJET: return "Responsable Projet";
+            case RESPONSABLE_PRODUCTION: return "Responsable Production";
+            default: return role.name();
+        }
+    }
+
+    private javafx.scene.layout.HBox createInfoCard(String icon, String label, String value) {
+        javafx.scene.layout.HBox card = new javafx.scene.layout.HBox(12);
+        card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 12px; " +
+                "-fx-padding: 18px 20px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);");
+        card.setPrefWidth(515);
+
+        javafx.scene.control.Label iconLabel = new javafx.scene.control.Label(icon);
+        iconLabel.setStyle("-fx-font-size: 22px;");
+
+        javafx.scene.layout.VBox textBox = new javafx.scene.layout.VBox(4);
+
+        javafx.scene.control.Label labelText = new javafx.scene.control.Label(label);
+        labelText.setStyle("-fx-font-size: 13px; -fx-text-fill: #718096; -fx-font-weight: bold;");
+
+        javafx.scene.control.Label valueText = new javafx.scene.control.Label(value);
+        valueText.setStyle("-fx-font-size: 15px; -fx-text-fill: #2D3748;");
+
+        textBox.getChildren().addAll(labelText, valueText);
+        card.getChildren().addAll(iconLabel, textBox);
+
+        return card;
+    }
+
+    private void showEditProfileStage(models.Utilisateur user) {
+        javafx.stage.Stage stage = new javafx.stage.Stage();
+        stage.setTitle("Modifier mes informations");
+        stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+
+        javafx.scene.layout.VBox vbox = new javafx.scene.layout.VBox(15);
+        vbox.setPadding(new javafx.geometry.Insets(20));
+        vbox.setStyle("-fx-background-color: white;");
+
+        javafx.scene.control.Label titleLabel = new javafx.scene.control.Label("Modifier mes informations");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        javafx.scene.control.Label label1 = new javafx.scene.control.Label("Nom:");
+        javafx.scene.control.TextField nomField = new javafx.scene.control.TextField(user.getNom());
+        nomField.setPrefWidth(350);
+
+        javafx.scene.control.Label label2 = new javafx.scene.control.Label("Prénom:");
+        javafx.scene.control.TextField prenomField = new javafx.scene.control.TextField(user.getPrenom());
+        prenomField.setPrefWidth(350);
+
+        javafx.scene.control.Label label3 = new javafx.scene.control.Label("Email:");
+        javafx.scene.control.TextField emailField = new javafx.scene.control.TextField(user.getEmail());
+        emailField.setPrefWidth(350);
+
+        javafx.scene.control.Label label4 = new javafx.scene.control.Label("Téléphone:");
+        javafx.scene.control.TextField telField = new javafx.scene.control.TextField(user.getTel());
+        telField.setPrefWidth(350);
+
+        // Validation
+        nomField.textProperty().addListener((obs, old, newVal) -> {
+            if (!newVal.matches("[a-zA-ZÀ-ÿ\\s]*")) nomField.setText(old);
+        });
+        prenomField.textProperty().addListener((obs, old, newVal) -> {
+            if (!newVal.matches("[a-zA-ZÀ-ÿ\\s]*")) prenomField.setText(old);
+        });
+        telField.textProperty().addListener((obs, old, newVal) -> {
+            if (!newVal.matches("[0-9+\\s]*") || newVal.length() > 12) telField.setText(old);
+        });
+
+        javafx.scene.layout.HBox buttonBox = new javafx.scene.layout.HBox(10);
+        buttonBox.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+
+        javafx.scene.control.Button btnSave = new javafx.scene.control.Button("Enregistrer");
+        btnSave.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10 30; -fx-font-size: 14px;");
+
+        javafx.scene.control.Button btnCancel = new javafx.scene.control.Button("Annuler");
+        btnCancel.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 10 30; -fx-font-size: 14px;");
+        btnCancel.setOnAction(e -> stage.close());
+
+        buttonBox.getChildren().addAll(btnSave, btnCancel);
+
+        vbox.getChildren().addAll(titleLabel, label1, nomField, label2, prenomField, label3, emailField, label4, telField, buttonBox);
+
+        btnSave.setOnAction(e -> {
+            if (nomField.getText().trim().isEmpty() || prenomField.getText().trim().isEmpty() ||
+                    emailField.getText().trim().isEmpty() || telField.getText().trim().isEmpty()) {
+                showAlert("Erreur", "Tous les champs sont obligatoires");
+                return;
+            }
+
+            if (!emailField.getText().equals(user.getEmail())) {
+                try {
+                    services.UtilisateurService utilisateurService = services.UtilisateurService.getInstance();
+                    if (utilisateurService.emailExists(emailField.getText())) {
+                        showAlert("Erreur", "Cet email est déjà utilisé");
+                        return;
+                    }
+                } catch (Exception ex) {
+                    showAlert("Erreur", "Erreur lors de la vérification de l'email");
+                    return;
+                }
+            }
+
+            try {
+                user.setNom(nomField.getText().trim());
+                user.setPrenom(prenomField.getText().trim());
+                user.setEmail(emailField.getText().trim());
+                user.setTel(telField.getText().trim());
+
+                services.UtilisateurService.getInstance().modifier(user);
+
+                stage.close();
+                showAlert("Succès", "Vos informations ont été mises à jour!");
+            } catch (Exception ex) {
+                showAlert("Erreur", "Impossible de mettre à jour: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(vbox, 450, 400);
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.show();
+
+        // Focus après affichage
+        javafx.application.Platform.runLater(() -> nomField.requestFocus());
+    }
+
+    private void showSimplePasswordDialog(models.Utilisateur user) {
+        javafx.stage.Stage stage = new javafx.stage.Stage();
+        stage.setTitle("Changer mot de passe");
+        stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+
+        javafx.scene.layout.VBox vbox = new javafx.scene.layout.VBox(15);
+        vbox.setPadding(new javafx.geometry.Insets(20));
+        vbox.setStyle("-fx-background-color: white;");
+
+        javafx.scene.control.Label titleLabel = new javafx.scene.control.Label("Modifier votre mot de passe");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        javafx.scene.control.Label label1 = new javafx.scene.control.Label("Ancien mot de passe:");
+        javafx.scene.control.PasswordField oldField = new javafx.scene.control.PasswordField();
+        oldField.setPromptText("Entrez l'ancien mot de passe");
+        oldField.setPrefWidth(350);
+
+        javafx.scene.control.Label label2 = new javafx.scene.control.Label("Nouveau mot de passe:");
+        javafx.scene.control.PasswordField newField = new javafx.scene.control.PasswordField();
+        newField.setPromptText("Entrez le nouveau mot de passe");
+        newField.setPrefWidth(350);
+
+        javafx.scene.control.Label label3 = new javafx.scene.control.Label("Confirmer le mot de passe:");
+        javafx.scene.control.PasswordField confirmField = new javafx.scene.control.PasswordField();
+        confirmField.setPromptText("Confirmez le nouveau mot de passe");
+        confirmField.setPrefWidth(350);
+
+        javafx.scene.control.Label infoLabel = new javafx.scene.control.Label(
+                "Le mot de passe doit contenir:\n• 8 caractères minimum\n• 1 majuscule\n• 1 minuscule\n• 1 chiffre\n• 1 caractère spécial"
+        );
+        infoLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #666;");
+
+        javafx.scene.layout.HBox buttonBox = new javafx.scene.layout.HBox(10);
+        buttonBox.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+
+        javafx.scene.control.Button btnChange = new javafx.scene.control.Button("Changer");
+        btnChange.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 10 30; -fx-font-size: 14px;");
+
+        javafx.scene.control.Button btnCancel = new javafx.scene.control.Button("Annuler");
+        btnCancel.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 10 30; -fx-font-size: 14px;");
+        btnCancel.setOnAction(e -> stage.close());
+
+        buttonBox.getChildren().addAll(btnChange, btnCancel);
+
+        vbox.getChildren().addAll(titleLabel, label1, oldField, label2, newField, label3, confirmField, infoLabel, buttonBox);
+
+        btnChange.setOnAction(e -> {
+            String oldPassword = oldField.getText().trim();
+            String newPassword = newField.getText().trim();
+            String confirmPassword = confirmField.getText().trim();
+
+            if (oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+                showAlert("Erreur", "Tous les champs sont obligatoires");
+                return;
+            }
+
+            String hashedOldPassword = utils.PasswordValidator.hashPassword(oldPassword);
+            if (!user.getPassword().equals(hashedOldPassword)) {
+                showAlert("Erreur", "L'ancien mot de passe est incorrect");
+                return;
+            }
+
+            if (!newPassword.equals(confirmPassword)) {
+                showAlert("Erreur", "Les mots de passe ne correspondent pas");
+                return;
+            }
+
+            utils.PasswordValidator.ValidationResult validation = utils.PasswordValidator.validatePassword(newPassword);
+            if (!validation.isValid()) {
+                showAlert("Erreur", validation.getMessage());
+                return;
+            }
+
+            try {
+                String hashedNewPassword = utils.PasswordValidator.hashPassword(newPassword);
+                services.UtilisateurService.getInstance().updatePassword(user.getEmail(), hashedNewPassword);
+                user.setPassword(hashedNewPassword);
+                stage.close();
+                showAlert("Succès", "Votre mot de passe a été changé avec succès!");
+            } catch (Exception ex) {
+                showAlert("Erreur", "Impossible de changer le mot de passe: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(vbox, 450, 450);
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.show();
+
+        // Focus après affichage
+        javafx.application.Platform.runLater(() -> oldField.requestFocus());
+    }
+
 
     private void loadUtilisateurs() {
         try {
@@ -231,7 +643,7 @@ public class DashboardAdminController {
         StackPane avatarPane = new StackPane();
         avatarPane.setPrefSize(80, 80);
         avatarPane.getStyleClass().add("avatar-large");
-        
+
         Label avatarLabel = new Label(user.getNom().substring(0, 1).toUpperCase());
         avatarLabel.setFont(Font.font("System Bold", 32));
         avatarLabel.setTextFill(javafx.scene.paint.Color.WHITE);
@@ -248,15 +660,15 @@ public class DashboardAdminController {
         Label roleLabel = new Label(user.getRole().toString());
         roleLabel.setPadding(new Insets(6, 16, 6, 16));
         roleLabel.getStyleClass().addAll("role-badge", getRoleBadgeClass(user.getRole()));
-        
+
         // Statut badge
         Label statutLabel = new Label(user.isActif() ? "✓ Actif" : "✗ Inactif");
         statutLabel.setPadding(new Insets(4, 12, 4, 12));
-        statutLabel.setStyle(user.isActif() 
-            ? "-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: bold;"
-            : "-fx-background-color: #FEE2E2; -fx-text-fill: #991B1B; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: bold;"
+        statutLabel.setStyle(user.isActif()
+                ? "-fx-background-color: #D1FAE5; -fx-text-fill: #065F46; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: bold;"
+                : "-fx-background-color: #FEE2E2; -fx-text-fill: #991B1B; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: bold;"
         );
-        
+
         HBox badgesBox = new HBox(8);
         badgesBox.setAlignment(Pos.CENTER);
         badgesBox.getChildren().addAll(roleLabel, statutLabel);
@@ -301,8 +713,8 @@ public class DashboardAdminController {
 
         Button btnToggleStatut = new Button(user.isActif() ? "Désactiver" : "Activer");
         btnToggleStatut.getStyleClass().addAll(
-            user.isActif() ? "button-danger" : "button-success", 
-            "card-action-button-small"
+                user.isActif() ? "button-danger" : "button-success",
+                "card-action-button-small"
         );
         btnToggleStatut.setOnAction(e -> handleToggleStatut(user));
         HBox.setHgrow(btnToggleStatut, Priority.ALWAYS);
@@ -406,7 +818,15 @@ public class DashboardAdminController {
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == saveButtonType) {
             try {
+                String oldPassword = user.getPassword(); // Sauvegarder l'ancien mot de passe
                 updateUserFromForm(user, grid);
+
+                // Si le mot de passe a été modifié, le hasher
+                if (!user.getPassword().equals(oldPassword)) {
+                    String hashedPassword = utils.PasswordValidator.hashPassword(user.getPassword());
+                    user.setPassword(hashedPassword);
+                }
+
                 utilisateurService.modifier(user);
                 refreshCurrentView();
                 showAlert("Succès", "Utilisateur modifié avec succès");
@@ -421,7 +841,7 @@ public class DashboardAdminController {
         // Désactiver au lieu de supprimer
         handleToggleStatut(user);
     }
-    
+
     private void handleToggleStatut(Utilisateur user) {
         try {
             if (user.isActif()) {
@@ -429,9 +849,9 @@ public class DashboardAdminController {
                 Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
                 confirmation.setTitle("Confirmation");
                 confirmation.setHeaderText("Désactiver l'utilisateur");
-                confirmation.setContentText("Êtes-vous sûr de vouloir désactiver " + 
-                                           user.getNom() + " " + user.getPrenom() + " ?\n\n" +
-                                           "L'utilisateur ne pourra plus se connecter.");
+                confirmation.setContentText("Êtes-vous sûr de vouloir désactiver " +
+                        user.getNom() + " " + user.getPrenom() + " ?\n\n" +
+                        "L'utilisateur ne pourra plus se connecter.");
 
                 Optional<ButtonType> result = confirmation.showAndWait();
                 if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -496,23 +916,38 @@ public class DashboardAdminController {
         if (result.isPresent() && result.get() == saveButtonType) {
             try {
                 Utilisateur newUser = createUserFromForm(grid);
-                
+
+                // DEBUG: Afficher les informations de l'utilisateur créé
+                System.out.println("=== DEBUG AJOUT UTILISATEUR ===");
+                System.out.println("Nom: " + newUser.getNom());
+                System.out.println("Email: " + newUser.getEmail());
+                System.out.println("Rôle récupéré: " + newUser.getRole());
+                System.out.println("Mot de passe (avant hash): " + newUser.getPassword());
+
                 // Vérifier l'unicité de l'email et du CIN
                 if (utilisateurService.emailExists(newUser.getEmail())) {
                     showAlert("Erreur", "Cet email est déjà utilisé");
                     return;
                 }
-                
+
                 if (utilisateurService.cinExists(newUser.getCin())) {
                     showAlert("Erreur", "Ce CIN est déjà enregistré");
                     return;
                 }
-                
+
+                // Hasher le mot de passe avant d'ajouter
+                String hashedPassword = utils.PasswordValidator.hashPassword(newUser.getPassword());
+                newUser.setPassword(hashedPassword);
+
+                System.out.println("Mot de passe (après hash): " + newUser.getPassword());
+                System.out.println("Rôle final: " + newUser.getRole());
+                System.out.println("=== FIN DEBUG ===");
+
                 utilisateurService.ajouter(newUser);
                 refreshCurrentView();
                 showAlert("Succès", "Utilisateur ajouté avec succès");
             } catch (Exception e) {
-                showAlert("Erreur", "Impossible d'ajouter l'utilisateur");
+                showAlert("Erreur", "Impossible d'ajouter l'utilisateur: " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -597,13 +1032,13 @@ public class DashboardAdminController {
         // Champs employé (optionnels)
         Label departmentLabel = new Label("Département:");
         TextField departmentField = new TextField(user != null ? user.getDepartment() : "");
-        
+
         Label posteLabel = new Label("Poste:");
         TextField posteField = new TextField(user != null ? user.getPoste() : "");
-        
+
         Label salaireLabel = new Label("Salaire:");
         TextField salaireField = new TextField(user != null && user.getSalaire() > 0 ? String.valueOf(user.getSalaire()) : "");
-        
+
         Label competencesLabel = new Label("Compétences:");
         TextField competencesField = new TextField(user != null ? user.getCompetences() : "");
 
@@ -645,26 +1080,26 @@ public class DashboardAdminController {
         // Fonction pour afficher/cacher les champs employé
         Runnable updateFieldsVisibility = () -> {
             Role selectedRole = roleCombo.getValue();
-            boolean isEmployeOrResponsable = selectedRole == Role.EMPLOYE || 
-                                            selectedRole == Role.RESPONSABLE_RH ||
-                                            selectedRole == Role.RESPONSABLE_PROJET ||
-                                            selectedRole == Role.RESPONSABLE_PRODUCTION;
-            
+            boolean isEmployeOrResponsable = selectedRole == Role.EMPLOYE ||
+                    selectedRole == Role.RESPONSABLE_RH ||
+                    selectedRole == Role.RESPONSABLE_PROJET ||
+                    selectedRole == Role.RESPONSABLE_PRODUCTION;
+
             departmentLabel.setVisible(isEmployeOrResponsable);
             departmentLabel.setManaged(isEmployeOrResponsable);
             departmentField.setVisible(isEmployeOrResponsable);
             departmentField.setManaged(isEmployeOrResponsable);
-            
+
             posteLabel.setVisible(isEmployeOrResponsable);
             posteLabel.setManaged(isEmployeOrResponsable);
             posteField.setVisible(isEmployeOrResponsable);
             posteField.setManaged(isEmployeOrResponsable);
-            
+
             salaireLabel.setVisible(isEmployeOrResponsable);
             salaireLabel.setManaged(isEmployeOrResponsable);
             salaireField.setVisible(isEmployeOrResponsable);
             salaireField.setManaged(isEmployeOrResponsable);
-            
+
             competencesLabel.setVisible(isEmployeOrResponsable);
             competencesLabel.setManaged(isEmployeOrResponsable);
             competencesField.setVisible(isEmployeOrResponsable);
@@ -701,7 +1136,7 @@ public class DashboardAdminController {
         int cin = Integer.parseInt(getFieldValue(grid, "cin"));
         String password = getFieldValue(grid, "password");
         Role role = getComboValue(grid, "role");
-        
+
         // Si le rôle est ADMIN ou CEO, créer sans les champs employé
         if (role == Role.ADMIN || role == Role.CEO) {
             return new Utilisateur(nom, prenom, email, tel, cin, password, role);
@@ -712,7 +1147,7 @@ public class DashboardAdminController {
             String salaireStr = getFieldValue(grid, "salaire");
             double salaire = salaireStr.isEmpty() ? 0.0 : Double.parseDouble(salaireStr);
             String competences = getFieldValue(grid, "competences");
-            
+
             return new Utilisateur(nom, prenom, email, tel, cin, password, role, department, poste, salaire, competences);
         }
     }
@@ -725,7 +1160,7 @@ public class DashboardAdminController {
         user.setCin(Integer.parseInt(getFieldValue(grid, "cin")));
         user.setPassword(getFieldValue(grid, "password"));
         user.setRole(getComboValue(grid, "role"));
-        
+
         // Si le rôle est ADMIN ou CEO, mettre NULL pour les champs employé
         if (user.getRole() == Role.ADMIN || user.getRole() == Role.CEO) {
             user.setDepartment(null);
@@ -756,29 +1191,163 @@ public class DashboardAdminController {
     }
 
     private Role getComboValue(GridPane grid, String userData) {
+        System.out.println("=== DEBUG getComboValue ===");
+        System.out.println("Recherche userData: " + userData);
+
         for (javafx.scene.Node node : grid.getChildren()) {
-            if (node.getUserData() != null && node.getUserData().equals(userData)) {
-                if (node instanceof ComboBox) {
-                    return (Role) ((ComboBox<?>) node).getValue();
+            if (node.getUserData() != null) {
+                System.out.println("Node trouvé avec userData: " + node.getUserData() + " (Type: " + node.getClass().getSimpleName() + ")");
+
+                if (node.getUserData().equals(userData)) {
+                    System.out.println("Match trouvé!");
+                    if (node instanceof ComboBox) {
+                        Role selectedRole = (Role) ((ComboBox<?>) node).getValue();
+                        System.out.println("Rôle sélectionné dans ComboBox: " + selectedRole);
+                        return selectedRole;
+                    }
                 }
             }
         }
+
+        System.out.println("ATTENTION: Aucun ComboBox trouvé avec userData '" + userData + "', retour EMPLOYE par défaut");
         return Role.EMPLOYE;
     }
 
-    @FXML
-    private void handleEvenements(ActionEvent event) {
+    private void loadModule(String fxmlPath) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/EventDashboard.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
-            Stage stage = (Stage) btnEvenements.getScene().getWindow();
-            stage.getScene().setRoot(root);
 
-            stage.centerOnScreen();
-
+            main.setCenter(root);
         } catch (IOException e) {
-            System.err.println("Erreur de chargement du Dashboard Événements : " + e.getMessage());
+            System.err.println("Erreur de chargement : " + e.getMessage());
             e.printStackTrace();
         }
+    }
+    @FXML
+    private void handleEvenements(ActionEvent event) {
+        loadModule("/EventDashboard.fxml");
+    }
+
+    @FXML
+    private void handleServices(ActionEvent event) {
+        loadModule("/service-tab.fxml");
+    }
+
+    @FXML
+    private void handleCategories(ActionEvent event) {
+        loadModule("/categorie-tab.fxml");
+    }
+
+    @FXML
+    private void handleProduits(ActionEvent event) {
+        loadModule("/produit.fxml");
+    }
+
+    @FXML
+    private void handleRessources(ActionEvent event) {
+        loadModule("/ressource.fxml");
+    }
+
+    @FXML
+    private void handleProjets(ActionEvent event) {
+        loadModule("/ListeProjets.fxml");
+    }
+
+    @FXML
+    private void handlePlanning(ActionEvent event) {
+        loadModule("/dashboard-view.fxml");
+    }
+
+
+    private void navigateToModule(String fxmlPath, String cssPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+
+            // Passer l'utilisateur actuel au contrôleur si c'est MainController
+            Object controller = loader.getController();
+            if (controller instanceof MainController && currentUser != null) {
+                ((MainController) controller).initData(currentUser);
+            }
+
+            Stage stage = (Stage) logoutButton.getScene().getWindow();
+            Scene scene = new Scene(root);
+            if (cssPath != null) {
+                scene.getStylesheets().add(getClass().getResource(cssPath).toExternalForm());
+            }
+            stage.setScene(scene);
+            stage.centerOnScreen();
+        } catch (IOException e) {
+            System.err.println("Erreur de chargement de la vue " + fxmlPath + " : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // ========== CHATBOT METHODS ==========
+
+    @FXML
+    private void toggleChatbot() {
+        boolean isVisible = chatbotContainer.isVisible();
+        chatbotContainer.setVisible(!isVisible);
+        chatbotContainer.setManaged(!isVisible);
+    }
+
+    @FXML
+    private void closeChatbot() {
+        chatbotContainer.setVisible(false);
+        chatbotContainer.setManaged(false);
+    }
+
+    @FXML
+    private void sendChatMessage() {
+        String message = chatInputField.getText().trim();
+        if (message.isEmpty()) return;
+
+        // Afficher le message de l'utilisateur
+        addUserMessage(message);
+
+        // Effacer le champ
+        chatInputField.clear();
+
+        // Obtenir et afficher la réponse du bot
+        String response = chatbotService.processQuestion(message);
+        addBotMessage(response);
+
+        // Scroll vers le bas
+        javafx.application.Platform.runLater(() -> {
+            chatScrollPane.setVvalue(1.0);
+        });
+    }
+
+    private void addUserMessage(String message) {
+        Label messageLabel = new Label(message);
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(300);
+        messageLabel.setStyle("-fx-background-color: #4299E1; -fx-text-fill: white; " +
+                "-fx-padding: 10; -fx-background-radius: 10; " +
+                "-fx-font-size: 13px;");
+
+        HBox messageBox = new HBox(messageLabel);
+        messageBox.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+        messageBox.setPadding(new javafx.geometry.Insets(5));
+
+        chatMessagesContainer.getChildren().add(messageBox);
+    }
+
+    private void addBotMessage(String message) {
+        Label messageLabel = new Label(message);
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(300);
+        messageLabel.setStyle("-fx-background-color: white; -fx-text-fill: #2D3748; " +
+                "-fx-padding: 10; -fx-background-radius: 10; " +
+                "-fx-border-color: #E2E8F0; -fx-border-width: 1; " +
+                "-fx-font-size: 13px;");
+
+        HBox messageBox = new HBox(messageLabel);
+        messageBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        messageBox.setPadding(new javafx.geometry.Insets(5));
+
+        chatMessagesContainer.getChildren().add(messageBox);
     }
 }

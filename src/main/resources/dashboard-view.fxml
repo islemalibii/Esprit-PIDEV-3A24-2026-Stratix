@@ -10,10 +10,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
-<?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.DashboardController"
             style="-fx-background-color: linear-gradient(to bottom, #f0f9ff, #e6f0fa);">
 
@@ -23,8 +22,9 @@
                 <Insets top="10" left="35" right="35" bottom="10"/>
             </padding>
 
+            <!-- Barre de navigation avec statut IA -->
             <HBox spacing="10" alignment="CENTER_LEFT">
-                <Button onAction="#showDashboardFromButton" text="🏠 Dashboard"
+                <Button onAction="#showDashboardFromButton" text="🏠 Accueil"
                         style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 5; -fx-font-weight: bold; -fx-cursor: hand;" />
                 <Button onAction="#showPlanningFromButton" text="📅 Planning"
                         style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 5; -fx-font-weight: bold; -fx-cursor: hand;" />
@@ -34,16 +34,30 @@
                         style="-fx-background-color: #8b5cf6; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 5; -fx-font-weight: bold; -fx-cursor: hand;" />
                 <Button onAction="#showWhiteboardFromButton" text="📋 Whiteboard"
                         style="-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-padding: 8 15; -fx-background-radius: 5; -fx-font-weight: bold; -fx-cursor: hand;" />
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <!-- Statut IA dans la barre de navigation -->
+                <HBox spacing="8" alignment="CENTER"
+                      style="-fx-background-color: #2c3e50; -fx-background-radius: 30; -fx-padding: 5 15;">
+                    <Label text="🤖" style="-fx-font-size: 16px;"/>
+                    <Label text="IA" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                    <Label text="|" style="-fx-text-fill: #64748b;"/>
+                    <Label fx:id="iaStatusLabel" text="Vérification..."
+                           style="-fx-text-fill: #f59e0b; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                </HBox>
             </HBox>
 
+            <!-- En-tête du tableau de bord -->
             <HBox alignment="CENTER_LEFT" style="-fx-background-color: linear-gradient(to right, #1e293b, #0f172a); -fx-background-radius: 15; -fx-padding: 20;">
                 <VBox spacing="5" HBox.hgrow="ALWAYS">
-                    <Label text="📊 TABLEAU DE BORD" style="-fx-text-fill: white; -fx-font-size: 26px; -fx-font-weight: bold;"/>
+                    <Label text="📊 " style="-fx-text-fill: white; -fx-font-size: 26px; -fx-font-weight: bold;"/>
                     <Label text="Vue d'ensemble de votre activité" style="-fx-text-fill: #94a3b8; -fx-font-size: 14px;"/>
                 </VBox>
 
                 <HBox style="-fx-background-color: rgba(255,255,255,0.15); -fx-background-radius: 30; -fx-padding: 5 15;" alignment="CENTER">
-                    <TextField fx:id="searchField" promptText="Rechercher..." style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+                    <TextField fx:id="searchField" promptText="Rechercher..."
+                               style="-fx-background-color: transparent; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8;"/>
                 </HBox>
             </HBox>
         </VBox>
@@ -57,7 +71,8 @@
                 </padding>
 
                 <!-- RÉSULTATS DE RECHERCHE -->
-                <VBox fx:id="searchResultsContainer" spacing="10" managed="false" visible="false" style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+                <VBox fx:id="searchResultsContainer" spacing="10" managed="false" visible="false"
+                      style="-fx-background-color: white; -fx-background-radius: 15; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 0);">
                     <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" text="🔍 Résultats de recherche"/>
                     <ListView fx:id="searchResultsList" prefHeight="150" style="-fx-background-radius: 10; -fx-border-radius: 10;"/>
                 </VBox>
@@ -144,6 +159,20 @@
                     </HBox>
                 </VBox>
 
+                <!-- ⭐ SECTION NOTIFICATIONS EMAIL - BOUTON UNIQUE ⭐ -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 5);">
+                    <Label text="📧 NOTIFICATIONS EMAIL"
+                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-background-color: #f8fafc; -fx-padding: 10 20; -fx-background-radius: 30;"/>
+
+                    <HBox spacing="20" alignment="CENTER">
+                        <Button fx:id="btnComposeEmail" text="📧 Composer un email"
+                                style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 15 30; -fx-background-radius: 50; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.3), 10, 0, 0, 2);"/>
+                    </HBox>
+
+                    <Label text="Cliquez pour envoyer une notification par email"
+                           style="-fx-text-fill: #64748b; -fx-font-size: 13px; -fx-alignment: center; -fx-padding: 5 0 0 0;"/>
+                </VBox>
+
                 <!-- Section 3: Graphique et Citation -->
                 <HBox spacing="20">
                     <!-- Graphique -->
@@ -185,14 +214,14 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Citation du jour -->
+                    <!-- Citation du jour - CORRIGÉ (wrapText supprimé) -->
                     <VBox spacing="15" style="-fx-background-color: linear-gradient(to right, #667eea, #764ba2); -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 0);" prefWidth="300">
                         <HBox alignment="CENTER_LEFT" spacing="10">
                             <Label text="💬" style="-fx-font-size: 28px; -fx-text-fill: white;"/>
                             <Label text="CITATION DU JOUR" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
                         </HBox>
 
-                        <Label fx:id="lblCitation" wrapText="true"
+                        <Label fx:id="lblCitation"
                                style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-style: italic; -fx-padding: 10 0;"
                                text="Chargement de la citation..."/>
 
@@ -203,7 +232,20 @@
                     </VBox>
                 </HBox>
 
-                <!-- Boutons de navigation -->
+                <!-- ⭐ SECTION IA - AVEC CHAT WIDGET ⭐ -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15, 0, 0, 5);">
+                    <Label text="🤖 ASSISTANT IA"
+                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b; -fx-background-color: #f8fafc; -fx-padding: 10 20; -fx-background-radius: 30;"/>
+
+                    <!-- Conteneur pour le widget de chat -->
+                    <VBox fx:id="chatWidgetContainer" spacing="10" prefHeight="400" />
+
+                    <!-- Message si le widget n'est pas chargé -->
+                    <Label fx:id="iaMessage" text="Chargement de l'assistant IA..."
+                           style="-fx-text-fill: #64748b; -fx-font-size: 14px; -fx-alignment: center;"/>
+                </VBox>
+
+                <!-- Boutons dee navigation -->
                 <HBox spacing="20" alignment="CENTER" style="-fx-padding: 20 0 20 0;">
                     <Button text="📋 GESTION DES TÂCHES" onAction="#openTaches"
                             style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 15 35; -fx-background-radius: 50; -fx-cursor: hand;"/>

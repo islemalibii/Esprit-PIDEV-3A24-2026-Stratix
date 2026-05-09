@@ -1,6 +1,6 @@
 package services;
 
-import Services.service_ressource;
+import services.service_ressource;
 import models.Ressource;
 import org.junit.jupiter.api.*;
 

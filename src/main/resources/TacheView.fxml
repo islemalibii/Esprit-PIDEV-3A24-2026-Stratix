@@ -1,17 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.DatePicker?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="700" prefWidth="1000" style="-fx-background-color: #f0f2f5;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TacheController">
+<AnchorPane prefHeight="700" prefWidth="1000" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TacheController">
 
     <!-- Header avec titre et statistiques -->
     <VBox layoutX="0" layoutY="0" prefWidth="1000" style="-fx-background-color: #2c3e50;">
@@ -43,7 +36,7 @@
         </HBox>
     </VBox>
 
-    <!-- Formulaire centré avec ScrollPane pour éviter les débordements -->
+    <!-- Formulaire centré avec ScrollPane -->
     <ScrollPane layoutX="200" layoutY="100" prefHeight="550" prefWidth="600"
                 style="-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;">
         <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 15, 0, 0, 0);"
@@ -83,8 +76,8 @@
                     <ComboBox fx:id="cmbEmploye" prefHeight="40" promptText="Sélectionner un employé" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #cbd5e1;" />
                 </VBox>
                 <VBox spacing="3" HBox.hgrow="ALWAYS">
-                    <Label style="-fx-font-weight: bold; -fx-text-fill: #475569;" text="ID Projet *" />
-                    <TextField fx:id="txtProjetId" promptText="Ex: 1" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #cbd5e1; -fx-padding: 10;" />
+                    <Label style="-fx-font-weight: bold; -fx-text-fill: #475569;" text="Projet *" />
+                    <ComboBox fx:id="cmbProjet" prefHeight="40" promptText="Sélectionner un projet" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #cbd5e1;" />
                 </VBox>
             </HBox>
 
@@ -96,19 +89,16 @@
 
             <Separator style="-fx-background-color: #e2e8f0;" />
 
-            <!-- ⭐ BOUTONS D'ACTION ⭐ -->
+            <!-- Boutons d'action -->
             <HBox alignment="CENTER" spacing="15" style="-fx-padding: 10 0 5 0;">
                 <Button onAction="#ajouterTache" prefWidth="140"
-                        style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 12 20; -fx-background-radius: 8; -fx-cursor: hand;
-                               -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.3), 8, 0, 0, 2);"
+                        style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand;"
                         text="✅ Ajouter" />
                 <Button onAction="#modifierTache" prefWidth="140"
-                        style="-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 12 20; -fx-background-radius: 8; -fx-cursor: hand;
-                               -fx-effect: dropshadow(gaussian, rgba(245,158,11,0.3), 8, 0, 0, 2);"
+                        style="-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand;"
                         text="✏️ Modifier" />
                 <Button onAction="#supprimerTache" prefWidth="140"
-                        style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 12 20; -fx-background-radius: 8; -fx-cursor: hand;
-                               -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.3), 8, 0, 0, 2);"
+                        style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 8; -fx-cursor: hand;"
                         text="🗑️ Supprimer" />
             </HBox>
 

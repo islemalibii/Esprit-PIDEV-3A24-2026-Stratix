@@ -27,7 +27,8 @@ public class EventEmailApi {
 
         try {
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(username, "StratiX Management"));            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
+            message.setFrom(new InternetAddress(username, "StratiX Management"));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
             message.setSubject("Confirmation : " + eventTitle);
 
             String htmlContent = "<h3>Félicitations !</h3>"

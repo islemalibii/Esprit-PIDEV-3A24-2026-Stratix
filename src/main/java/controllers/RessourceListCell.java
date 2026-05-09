@@ -1,99 +1,172 @@
 package controllers;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.layout.*;
 import models.Ressource;
 
 public class RessourceListCell extends ListCell<Ressource> {
 
-    @Override
-    protected void updateItem(Ressource r, boolean empty) {
-        super.updateItem(r, empty);
+    private final GridPane gridPane = new GridPane();
+    private final VBox contentBox = new VBox(8);
+    private final HBox cellBox = new HBox(15);
+    private final HBox buttonBox = new HBox(15);
+    private final HBox headerBox = new HBox(10);
 
-        if (empty || r == null) {
+    private final Label nomValeur = new Label();
+    private final Label typeValeur = new Label();
+    private final Label fournisseurValeur = new Label();
+    private final Label quantiteValeur = new Label();      // Pour la valeur
+    private final Label statutLabel = new Label();
+
+    private final Button btnModifier = new Button("✏ Modifier");
+    private final Button btnSupprimer = new Button("🗑 Retirer");
+
+    public RessourceListCell() {
+        // Styles
+        String valeurStyle = "-fx-text-fill: #2c3e50; -fx-font-size: 12px;";
+        nomValeur.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #2c3e50;");
+        typeValeur.setStyle(valeurStyle);
+        fournisseurValeur.setStyle(valeurStyle);
+        quantiteValeur.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        // Style des boutons
+        btnModifier.setStyle(
+                "-fx-background-color: #f39c12; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 13px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-padding: 8 15; " +
+                        "-fx-cursor: hand; " +
+                        "-fx-background-radius: 5;"
+        );
+
+        btnSupprimer.setStyle(
+                "-fx-background-color: #e74c3c; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 13px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-padding: 8 15; " +
+                        "-fx-cursor: hand; " +
+                        "-fx-background-radius: 5;"
+        );
+
+        // Configuration du GridPane
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(25);
+        col1.setHalignment(javafx.geometry.HPos.RIGHT);
+
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPercentWidth(75);
+        col2.setHalignment(javafx.geometry.HPos.LEFT);
+
+        gridPane.getColumnConstraints().addAll(col1, col2);
+
+        gridPane.setHgap(8);
+        gridPane.setVgap(3);
+        gridPane.setPadding(new Insets(5));
+        gridPane.setMaxWidth(Double.MAX_VALUE);
+
+        // Ligne d'en-tête
+        headerBox.getChildren().addAll(nomValeur);
+        headerBox.setAlignment(Pos.CENTER_LEFT);
+
+        int row = 0;
+        gridPane.add(headerBox, 0, row, 2, 1);
+        row++;
+
+        ajouterLigne(gridPane, "Type:", typeValeur, row++);
+        ajouterLigne(gridPane, "Fournisseur:", fournisseurValeur, row++);
+        ajouterLigne(gridPane, "Stock:", quantiteValeur, row++); // MODIFICATION ICI
+
+        // Boutons
+        buttonBox.getChildren().addAll(btnModifier, btnSupprimer);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        buttonBox.setSpacing(15);
+
+        // Statut
+        statutLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+        statutLabel.setMaxWidth(Double.MAX_VALUE);
+        statutLabel.setAlignment(Pos.CENTER);
+
+        contentBox.getChildren().addAll(gridPane, statutLabel, buttonBox);
+        contentBox.setSpacing(10);
+        contentBox.setMaxWidth(Double.MAX_VALUE);
+
+        cellBox.getChildren().add(contentBox);
+        cellBox.setStyle("-fx-padding: 15; -fx-border-color: transparent transparent #ecf0f1 transparent; -fx-background-color: white;");
+        cellBox.setSpacing(15);
+        HBox.setHgrow(contentBox, Priority.ALWAYS);
+    }
+
+    private void ajouterLigne(GridPane grid, String label, Label valeur, int row) {
+        Label lbl = new Label(label);
+        lbl.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #7f8c8d;");
+        grid.add(lbl, 0, row);
+        grid.add(valeur, 1, row);
+    }
+
+    public Button getBtnModifier() {
+        return btnModifier;
+    }
+
+    public Button getBtnSupprimer() {
+        return btnSupprimer;
+    }
+
+    @Override
+    protected void updateItem(Ressource ressource, boolean empty) {
+        super.updateItem(ressource, empty);
+
+        if (empty || ressource == null) {
             setText(null);
             setGraphic(null);
         } else {
-            // Créer une carte pour chaque ressource
-            VBox card = new VBox(10);
-            card.setStyle("-fx-border-color: #3498db; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 15; -fx-background-color: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);");
-            card.setPrefWidth(450);
+            // Remplir les valeurs
+            nomValeur.setText(ressource.getNom() != null ? ressource.getNom() : "-");
+            typeValeur.setText(ressource.getType_ressource() != null ? ressource.getType_ressource() : "-");
+            fournisseurValeur.setText(ressource.getFournisseur() != null ? ressource.getFournisseur() : "-");
 
-            // En-tête avec ID et Nom
-            Label titleLabel = new Label(r.getid() + " - " + r.getNom());
-            titleLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
-            titleLabel.setStyle("-fx-text-fill: #2c3e50;");
+            int quantite = ressource.getQuatite();
+            quantiteValeur.setText(String.valueOf(quantite));
 
-            // Type avec badge
-            Label typeBadge = new Label(r.getType_ressource());
-            typeBadge.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-padding: 5 10; -fx-background-radius: 15; -fx-font-size: 12;");
+            // Statut avec couleur
+            String statut;
+            String couleur;
+            String fond;
 
-            // Grille pour les détails
-            GridPane detailsGrid = new GridPane();
-            detailsGrid.setHgap(20);
-            detailsGrid.setVgap(8);
-            detailsGrid.setPadding(new Insets(10, 0, 10, 0));
-
-            // Fournisseur
-            detailsGrid.add(new Label("🏢 Fournisseur:"), 0, 0);
-            Label fournisseurLabel = new Label(r.getFournisseur());
-            fournisseurLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #34495e;");
-            detailsGrid.add(fournisseurLabel, 1, 0);
-
-            // Quantité
-            detailsGrid.add(new Label("📦 Quantité:"), 2, 0);
-            Label quantiteLabel = new Label(String.valueOf(r.getQuatite()));
-
-            // Changer la couleur selon la quantité
-            if (r.getQuatite() <= 0) {
-                quantiteLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #e74c3c; -fx-font-size: 16;"); // Rouge (rupture)
-            } else if (r.getQuatite() < 10) {
-                quantiteLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #f39c12; -fx-font-size: 16;"); // Orange (stock faible)
+            if (quantite <= 0) {
+                statut = "⚠ RUPTURE DE STOCK";
+                couleur = "#c62828";
+                fond = "#ffebee";
+            } else if (quantite <= 5) {
+                statut = "⚠ Stock faible";
+                couleur = "#ef6c00";
+                fond = "#fff3e0";
             } else {
-                quantiteLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #27ae60; -fx-font-size: 16;"); // Vert (stock OK)
+                statut = "✓ Disponible";
+                couleur = "#2e7d32";
+                fond = "#e8f5e8";
             }
-            detailsGrid.add(quantiteLabel, 3, 0);
 
-            // Icône selon le type
-            HBox headerBox = new HBox(10);
-            Label iconLabel = new Label(getEmojiForType(r.getType_ressource()));
-            iconLabel.setStyle("-fx-font-size: 24;");
-            headerBox.getChildren().addAll(iconLabel, titleLabel, typeBadge);
+            statutLabel.setText(statut);
+            statutLabel.setStyle(String.format(
+                    "-fx-text-fill: %s; -fx-font-weight: bold; -fx-font-size: 12px; " +
+                            "-fx-background-color: %s; -fx-padding: 5; -fx-background-radius: 5;",
+                    couleur, fond
+            ));
 
-            // Assembler la carte
-            card.getChildren().addAll(headerBox, detailsGrid);
+            // Couleur de la quantité
+            if (quantite <= 5) {
+                quantiteValeur.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-font-size: 14px;");
+            } else {
+                quantiteValeur.setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold; -fx-font-size: 14px;");
+            }
 
-            // Ajouter une marge en bas
-            VBox.setMargin(card, new Insets(0, 0, 10, 0));
-
-            setGraphic(card);
-        }
-    }
-
-    private String getEmojiForType(String type) {
-        if (type == null) return "📦";
-
-        String typeLower = type.toLowerCase();
-        if (typeLower.contains("informatique") || typeLower.contains("ordinateur")) {
-            return "💻";
-        } else if (typeLower.contains("mobilier") || typeLower.contains("chaise") || typeLower.contains("bureau")) {
-            return "🪑";
-        } else if (typeLower.contains("fourniture") || typeLower.contains("papier")) {
-            return "📝";
-        } else if (typeLower.contains("équipement") || typeLower.contains("outil")) {
-            return "🔧";
-        } else if (typeLower.contains("matière") || typeLower.contains("matériau")) {
-            return "⚙️";
-        } else if (typeLower.contains("logiciel")) {
-            return "💿";
-        } else {
-            return "📦";
+            setGraphic(cellBox);
         }
     }
 }

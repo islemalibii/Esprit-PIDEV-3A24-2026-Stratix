@@ -4,6 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.image.*?>
 
+<?import javafx.scene.web.WebView?>
 <ScrollPane fitToWidth="true" styleClass="scroll-pane" stylesheets="@/style/global.css"
             xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.EventDetailsAdminController">
@@ -21,28 +22,29 @@
                             </children>
                         </VBox>
 
-                        <VBox spacing="15" HBox.hgrow="ALWAYS">
+                        <VBox spacing="15" HBox.hgrow="ALWAYS" fillWidth="true">
+                            <Button text="Get Participants" styleClass="btn-modify-card" onAction="#handleExportParticipants"/>
                             <children>
                                 <Label fx:id="titleLabel" styleClass="heading-large" style="-fx-font-size: 28px; -fx-font-weight: bold;" wrapText="true" />
                                 <Separator />
 
-                                <GridPane vgap="12" hgap="25">
-                                    <columnConstraints>
+                            <GridPane vgap="12" hgap="25" VBox.vgrow="NEVER">
+                                <columnConstraints>
                                         <ColumnConstraints minWidth="100" />
                                         <ColumnConstraints hgrow="ALWAYS" />
                                     </columnConstraints>
                                     <children>
                                         <Label text="Statut :" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="input-label" style="-fx-font-weight: bold;" />
-                                        <Label fx:id="statusTextLabel"  GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                        <Label fx:id="statusTextLabel" styleClass="event-details" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                                         <Label text="Date :" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="input-label" style="-fx-font-weight: bold;" />
-                                        <Label fx:id="dateLabel"  GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label fx:id="dateLabel"  styleClass="event-details" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                                         <Label text="Lieu :" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="input-label" style="-fx-font-weight: bold;" />
-                                        <Label fx:id="locationLabel"  GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                        <Label fx:id="locationLabel"  styleClass="event-details" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
                                         <Label text="Type :" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="input-label" style="-fx-font-weight: bold;" />
-                                        <Label fx:id="typeLabel"  GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                        <Label fx:id="typeLabel" styleClass="event-details" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                                     </children>
                                 </GridPane>
 
@@ -54,12 +56,14 @@
                                 </VBox>
 
                                 <Separator />
+                                <VBox spacing="10" VBox.vgrow="ALWAYS" fx:id="mapSection">
+                                    <Label text="Localisation :" styleClass="input-label" style="-fx-font-weight: bold;" />
+                                    <WebView fx:id="mapView" minHeight="250" prefHeight="300" VBox.vgrow="ALWAYS" />
+                                </VBox>
 
-                                <VBox spacing="10" VBox.vgrow="ALWAYS">
-                                    <children>
-                                        <Label text="Feedbacks :" styleClass="input-label" style="-fx-font-weight: bold;" />
-                                        <VBox fx:id="feedbackContainer" spacing="8" />
-                                    </children>
+                                <VBox fx:id="feedbackSection" spacing="10">
+                                    <Label text="Feedbacks :" styleClass="input-label" />
+                                    <VBox fx:id="feedbackContainer" spacing="8" />
                                 </VBox>
 
                                 <HBox spacing="15" alignment="BOTTOM_RIGHT" style="-fx-padding: 20 0 0 0;">

@@ -28,7 +28,7 @@ public class AjoutCategorieController implements Initializable {
         if (UserRole.getInstance().isEmployee()) {
             btnAction.setVisible(false);
             btnAction.setManaged(false);
-            // Masquez aussi vos colonnes "Actions" dans le TableView si nécessaire
+
         }
     }
 

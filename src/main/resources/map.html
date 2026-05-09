@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; background: #eee; }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    var map;
+    var marker;
+
+    window.showCoordinates = function(lat, lon, label) {
+        console.log("Loading Map for: " + lat + "," + lon);
+
+        if (!map) {
+            map = L.map('map').setView([lat, lon], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        } else {
+            map.setView([lat, lon], 16);
+        }
+
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([lat, lon]).addTo(map).bindPopup(label).openPopup();
+
+        setTimeout(() => { map.invalidateSize(); }, 200);
+    };
+</script>
+</body>
+</html>

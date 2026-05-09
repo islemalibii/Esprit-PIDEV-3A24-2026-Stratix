@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+
+
 
 <VBox spacing="20" styleClass="main-container" xmlns="http://javafx.com/javafx/17"
       xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.StatistiquesController">
 
     <Label text="STATISTIQUES DES SERVICES" styleClass="page-title"/>
-
     <HBox spacing="20" alignment="CENTER">
         <VBox styleClass="stat-card blue" alignment="CENTER" spacing="5" prefWidth="180">
             <Label text="Budget Moyen" styleClass="stat-label"/>
@@ -23,6 +23,8 @@
             <Label fx:id="lblTotalBudget" text="0 DT" styleClass="stat-number"/>
         </VBox>
     </HBox>
+
+
 
     <TitledPane text="Budget par Catégorie" expanded="true">
         <BarChart fx:id="budgetChart" title="Budget par Catégorie (DT)" animated="false" prefHeight="300">
@@ -51,5 +53,4 @@
             </LineChart>
         </TitledPane>
     </HBox>
-
 </VBox>

@@ -12,14 +12,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
-import services.StatsService;
-import services.SERVICETache;
-import services.EmployeeService;
-import services.SERVICEPlanning;
+import services.*;
 import models.DashboardStats;
 import models.Tache;
 import models.Employe;
 import api.QuoteAPI;
+import utils.SessionManager;
 
 import java.io.IOException;
 import java.net.URL;
@@ -64,6 +62,14 @@ public class DashboardController implements Initializable {
     @FXML private VBox searchResultsContainer;
     @FXML private ListView<String> searchResultsList;
 
+    // ⭐ Widget IA
+    @FXML private Label iaStatusLabel;
+    @FXML private VBox chatWidgetContainer;
+    @FXML private Label iaMessage;
+
+    // ⭐ Bouton unique pour email
+    @FXML private Button btnComposeEmail;
+
     private StatsService statsService;
     private SERVICETache tacheService;
     private EmployeeService employeService;
@@ -80,6 +86,15 @@ public class DashboardController implements Initializable {
 
         chargerStatistiques();
         chargerCitation();
+
+        // ⭐ Charger le widget IA
+        loadChatWidget();
+
+        // ⭐ Vérifier le statut de l'IA
+        checkIAStatus();
+
+        // ⭐ Initialiser le bouton email
+        setupEmailButton();
 
         if (btnRefreshQuote != null) {
             btnRefreshQuote.setOnAction(e -> chargerCitation());
@@ -98,50 +113,119 @@ public class DashboardController implements Initializable {
         }
     }
 
+    /**
+     * ⭐ Initialise le bouton email
+     */
+    private void setupEmailButton() {
+        if (btnComposeEmail != null) {
+            btnComposeEmail.setOnAction(e -> openEmailComposer());
+        }
+    }
+
+    /**
+     * ⭐ Ouvre le composeur d'email
+     */
+    @FXML
+    private void openEmailComposer() {
+        System.out.println("📧 Ouverture du composeur d'email");
+        Stage stage = (Stage) btnComposeEmail.getScene().getWindow();
+        EmailComposerDialog.show(stage);
+    }
+
+    /**
+     * ⭐ Vérifie le statut de l'IA Groq
+     */
+    private void checkIAStatus() {
+        new Thread(() -> {
+            boolean isConnected = GroqAPI.testConnection();
+            javafx.application.Platform.runLater(() -> {
+                if (iaStatusLabel != null) {
+                    if (isConnected) {
+                        iaStatusLabel.setText("En ligne");
+                        iaStatusLabel.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
+                    } else {
+                        iaStatusLabel.setText("Hors ligne");
+                        iaStatusLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+                    }
+                }
+            });
+        }).start();
+    }
+
+    /**
+     * ⭐ Charge le widget IA
+     */
+    private void loadChatWidget() {
+        try {
+            String[] paths = {
+                    "/DashboardChatWidget.fxml",
+                    "/dashboard-chat-widget.fxml"
+            };
+
+            FXMLLoader loader = null;
+            for (String path : paths) {
+                if (getClass().getResource(path) != null) {
+                    loader = new FXMLLoader(getClass().getResource(path));
+                    break;
+                }
+            }
+
+            if (loader == null) {
+                if (iaMessage != null) {
+                    iaMessage.setText("❌ Widget IA non disponible");
+                }
+                return;
+            }
+
+            VBox chatWidget = loader.load();
+            if (chatWidgetContainer != null) {
+                chatWidgetContainer.getChildren().add(chatWidget);
+                if (iaMessage != null) {
+                    iaMessage.setVisible(false);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void chargerStatistiques() {
         try {
             DashboardStats stats = statsService.getDashboardStats();
 
-            // Labels principaux
-            lblTotalTaches.setText(String.valueOf(stats.getTotalTaches()));
-            lblEnCours.setText(String.valueOf(stats.getTachesEnCours()));
-            lblTerminees.setText(String.valueOf(stats.getTachesTerminees()));
-            lblEnRetard.setText(String.valueOf(stats.getTachesEnRetard()));
-            lblTotalEmployes.setText(String.valueOf(stats.getTotalEmployes()));
-            lblEnPoste.setText(String.valueOf(stats.getEmployesEnPoste()));
-            lblAbsents.setText(String.valueOf(stats.getEmployesAbsents()));
-            lblAFaire.setText(String.valueOf(stats.getTachesAFaire()));
+            if (lblTotalTaches != null) lblTotalTaches.setText(String.valueOf(stats.getTotalTaches()));
+            if (lblEnCours != null) lblEnCours.setText(String.valueOf(stats.getTachesEnCours()));
+            if (lblTerminees != null) lblTerminees.setText(String.valueOf(stats.getTachesTerminees()));
+            if (lblEnRetard != null) lblEnRetard.setText(String.valueOf(stats.getTachesEnRetard()));
+            if (lblTotalEmployes != null) lblTotalEmployes.setText(String.valueOf(stats.getTotalEmployes()));
+            if (lblEnPoste != null) lblEnPoste.setText(String.valueOf(stats.getEmployesEnPoste()));
+            if (lblAbsents != null) lblAbsents.setText(String.valueOf(stats.getEmployesAbsents()));
+            if (lblAFaire != null) lblAFaire.setText(String.valueOf(stats.getTachesAFaire()));
 
-            // Mini indicateurs
-            lblTotalEmployesMini.setText(String.valueOf(stats.getTotalEmployes()));
-            lblEnRetardMini.setText(String.valueOf(stats.getTachesEnRetard()));
+            if (lblTotalEmployesMini != null) lblTotalEmployesMini.setText(String.valueOf(stats.getTotalEmployes()));
+            if (lblEnRetardMini != null) lblEnRetardMini.setText(String.valueOf(stats.getTachesEnRetard()));
+            if (lblProjetsActifs != null) lblProjetsActifs.setText("3");
 
-            // Projets actifs (valeur par défaut)
-            lblProjetsActifs.setText("3");
-
-            // Taux de complétion
             int total = stats.getTotalTaches();
             int terminees = stats.getTachesTerminees();
             int taux = total > 0 ? (terminees * 100 / total) : 0;
-            lblTauxCompletion.setText(taux + "%");
+            if (lblTauxCompletion != null) lblTauxCompletion.setText(taux + "%");
 
-            // Graphique
-            lblAFaireGraph.setText(String.valueOf(stats.getTachesAFaire()));
-            lblEnCoursGraph.setText(String.valueOf(stats.getTachesEnCours()));
-            lblTermineesGraph.setText(String.valueOf(stats.getTachesTerminees()));
+            if (lblAFaireGraph != null) lblAFaireGraph.setText(String.valueOf(stats.getTachesAFaire()));
+            if (lblEnCoursGraph != null) lblEnCoursGraph.setText(String.valueOf(stats.getTachesEnCours()));
+            if (lblTermineesGraph != null) lblTermineesGraph.setText(String.valueOf(stats.getTachesTerminees()));
 
             int max = Math.max(stats.getTachesAFaire(),
                     Math.max(stats.getTachesEnCours(), stats.getTachesTerminees()));
             if (max > 0) {
-                barAFaire.setHeight((stats.getTachesAFaire() * 100.0) / max);
-                barEnCours.setHeight((stats.getTachesEnCours() * 100.0) / max);
-                barTerminees.setHeight((stats.getTachesTerminees() * 100.0) / max);
+                if (barAFaire != null) barAFaire.setHeight((stats.getTachesAFaire() * 100.0) / max);
+                if (barEnCours != null) barEnCours.setHeight((stats.getTachesEnCours() * 100.0) / max);
+                if (barTerminees != null) barTerminees.setHeight((stats.getTachesTerminees() * 100.0) / max);
             }
 
             System.out.println("✅ Dashboard mis à jour!");
 
         } catch (Exception e) {
-            System.err.println("❌ Erreur: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -149,23 +233,23 @@ public class DashboardController implements Initializable {
     private void chargerCitation() {
         try {
             String citation = QuoteAPI.getRandomQuote();
-            lblCitation.setText(citation);
+            if (lblCitation != null) lblCitation.setText(citation);
         } catch (Exception e) {
-            lblCitation.setText("“Le succès c'est d'aller d'échec en échec sans perdre son enthousiasme.” — Winston Churchill");
+            if (lblCitation != null) lblCitation.setText("“Le succès c'est d'aller d'échec en échec sans perdre son enthousiasme.” — Winston Churchill");
         }
     }
 
     private void effectuerRecherche(String recherche) {
+        if (searchResultsList == null) return;
+
         searchResultsList.getItems().clear();
 
-        // Recherche dans les tâches
         List<Tache> taches = tacheService.getAllTaches();
         List<String> resultats = taches.stream()
                 .filter(t -> t.getTitre().toLowerCase().contains(recherche))
                 .map(t -> "📋 Tâche: " + t.getTitre())
                 .collect(Collectors.toList());
 
-        // Recherche dans les employés
         List<Employe> employes = employeService.getAllEmployes();
         resultats.addAll(employes.stream()
                 .filter(e -> e.getUsername().toLowerCase().contains(recherche))
@@ -174,35 +258,33 @@ public class DashboardController implements Initializable {
 
         if (!resultats.isEmpty()) {
             searchResultsList.getItems().addAll(resultats);
-            searchResultsContainer.setVisible(true);
-            searchResultsContainer.setManaged(true);
+            if (searchResultsContainer != null) {
+                searchResultsContainer.setVisible(true);
+                searchResultsContainer.setManaged(true);
+            }
         } else {
             searchResultsList.getItems().add("🔍 Aucun résultat");
-            searchResultsContainer.setVisible(true);
-            searchResultsContainer.setManaged(true);
+            if (searchResultsContainer != null) {
+                searchResultsContainer.setVisible(true);
+                searchResultsContainer.setManaged(true);
+            }
         }
     }
 
     @FXML
     private void openTaches() {
-        System.out.println("🔄 Navigation vers Tâches");
-        MainsController.showTaches();
+        MainController.showTachesFromDashboard();
     }
 
     @FXML
     private void openPlanning() {
-        System.out.println("🔄 Navigation vers Planning");
-        MainsController.showPlanning();
+        MainController.showPlanningFromDashboard();
     }
 
     @FXML
     private void openCalendar() {
-        System.out.println("🔄 Navigation vers Calendrier");
-        MainsController.showCalendar();
+        MainController.showCalendarFromDashboard();
     }
-
-
-
 
     private void loadView(String fxmlPath) {
         try {
@@ -217,16 +299,26 @@ public class DashboardController implements Initializable {
 
     @FXML
     private void showDashboardFromButton() { loadView("/dashboard-view.fxml"); }
-
     @FXML
     private void showPlanningFromButton() { loadView("/PlanningListeView.fxml"); }
-
     @FXML
     private void showTachesFromButton() { loadView("/TacheListeView.fxml"); }
-
     @FXML
     private void showCalendarFromButton() { loadView("/calendar-view.fxml"); }
-
     @FXML
     private void showWhiteboardFromButton() { loadView("/WhiteboardView.fxml"); }
-}
+
+    @FXML
+    private void logout() {
+        try {
+            SessionManager.getInstance().logout();
+            Parent root = FXMLLoader.load(getClass().getResource("/PagePrincipaleView.fxml"));
+            Stage stage = (Stage) lblTotalTaches.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setMaximized(true);
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}//*

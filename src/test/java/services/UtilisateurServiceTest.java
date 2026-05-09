@@ -1,6 +1,6 @@
 package services;
 
-import Services.UtilisateurService;
+import services.UtilisateurService;
 import models.Utilisateur;
 import models.Role;
 import org.junit.jupiter.api.*;

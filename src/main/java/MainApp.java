@@ -1,9 +1,10 @@
-import controllers.DashboardAdminController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import controllers.DashboardAdminController;
+import models.Role;
 import models.Utilisateur;
 import services.UtilisateurService;
 import utils.SessionManager;
@@ -28,11 +29,12 @@ public class MainApp extends Application {
                         UtilisateurService utilisateurService = UtilisateurService.getInstance();
                         Utilisateur user = utilisateurService.getById(userId);
                         
-                        if (user != null && "ADMIN".equals(user.getRole().name())) {
+                        // Vérifier si l'utilisateur existe et est actif
+                        if (user != null && user.isActif()) {
                             shouldOpenDashboard = true;
                             loggedUser = user;
                         } else {
-                            // Session invalide, supprimer
+                            // Session invalide ou compte inactif, supprimer
                             sessionManager.logout();
                         }
                     } catch (Exception e) {
@@ -49,7 +51,7 @@ public class MainApp extends Application {
         
         // Ouvrir le dashboard ou la page de login
         if (shouldOpenDashboard && loggedUser != null) {
-            openDashboard(primaryStage, loggedUser);
+            openDashboardByRole(primaryStage, loggedUser);
         } else {
             openLogin(primaryStage);
         }
@@ -64,7 +66,31 @@ public class MainApp extends Application {
         primaryStage.show();
     }
     
-    private void openDashboard(Stage primaryStage, Utilisateur user) throws Exception {
+    /**
+     * Ouvrir le dashboard selon le rôle de l'utilisateur
+     */
+    private void openDashboardByRole(Stage primaryStage, Utilisateur user) throws Exception {
+        switch (user.getRole()) {
+            case ADMIN:
+                openAdminDashboard(primaryStage, user);
+                break;
+            case CEO:
+            case EMPLOYE:
+            case RESPONSABLE_RH:
+            case RESPONSABLE_PROJET:
+            case RESPONSABLE_PRODUCTION:
+                openStandardUserDashboard(primaryStage, user);
+                break;
+            default:
+                openLogin(primaryStage);
+                break;
+        }
+    }
+    
+    /**
+     * Ouvrir le dashboard Admin
+     */
+    private void openAdminDashboard(Stage primaryStage, Utilisateur user) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/dashboard_admin.fxml"));
         Parent root = loader.load();
         
@@ -73,6 +99,47 @@ public class MainApp extends Application {
         
         primaryStage.setTitle("Stratix - Dashboard Admin");
         primaryStage.setScene(new Scene(root, 1200, 700));
+        primaryStage.setResizable(true);
+        primaryStage.centerOnScreen();
+        primaryStage.show();
+    }
+    
+    /**
+     * Ouvrir le dashboard pour les autres utilisateurs (CEO, Employés, Responsables)
+     */
+    private void openStandardUserDashboard(Stage primaryStage, Utilisateur user) throws Exception {
+        // IMPORTANT: Définir l'utilisateur dans UserRole pour la session
+        models.UserRole.getInstance().setUser(user);
+        
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/service-view.fxml"));
+        Parent root = loader.load();
+        
+        // Récupérer le contrôleur et initialiser avec l'utilisateur
+        Object controller = loader.getController();
+        if (controller instanceof controllers.MainController) {
+            controllers.MainController mainController = (controllers.MainController) controller;
+            mainController.initData(user);
+        }
+        
+        String roleTitle = switch (user.getRole()) {
+            case CEO -> "CEO";
+            case EMPLOYE -> "Employé";
+            case RESPONSABLE_RH -> "Responsable RH";
+            case RESPONSABLE_PROJET -> "Responsable Projet";
+            case RESPONSABLE_PRODUCTION -> "Responsable Production";
+            default -> "Utilisateur";
+        };
+        
+        Scene scene = new Scene(root, 1300, 750);
+        
+        // Charger le CSS si disponible
+        String cssPath = "/css/style.css";
+        if (getClass().getResource(cssPath) != null) {
+            scene.getStylesheets().add(getClass().getResource(cssPath).toExternalForm());
+        }
+        
+        primaryStage.setTitle("stratiX - " + user.getNom() + " " + user.getPrenom() + " [" + roleTitle + "]");
+        primaryStage.setScene(scene);
         primaryStage.setResizable(true);
         primaryStage.centerOnScreen();
         primaryStage.show();

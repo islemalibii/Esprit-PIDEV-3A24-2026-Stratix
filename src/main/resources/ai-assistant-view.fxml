@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10" prefWidth="500" prefHeight="600"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.AIAssistantController"
+      style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 10;">
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="🤖" style="-fx-font-size: 32px;"/>
+        <VBox>
+            <Label text="Assistant IA" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a73e8;"/>
+            <Label fx:id="statusLabel" text="Initialisation..."
+                   style="-fx-text-fill: #5f6368; -fx-font-size: 12px;"/>
+        </VBox>
+    </HBox>
+
+    <Separator/>
+
+    <ScrollPane fx:id="scrollPane" VBox.vgrow="ALWAYS" fitToWidth="true"
+                style="-fx-background: transparent; -fx-background-color: #f8f9fa; -fx-border-color: #e0e0e0; -fx-border-radius: 5;">
+        <VBox fx:id="chatContainer" spacing="5" style="-fx-padding: 10;">
+        </VBox>
+    </ScrollPane>
+
+
+
+    <HBox spacing="10" style="-fx-padding: 5 0 5 0;">
+        <TextField fx:id="questionField" promptText="Posez votre question sur les services..."
+                   HBox.hgrow="ALWAYS"
+                   style="-fx-padding: 12; -fx-background-radius: 25; -fx-border-radius: 25; -fx-border-color: #dadce0;"/>
+        <Button fx:id="sendButton" text="Envoyer"
+                style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-padding: 12 25; -fx-background-radius: 25; -fx-cursor: hand;"
+                prefWidth="100"/>
+    </HBox>
+
+</VBox>

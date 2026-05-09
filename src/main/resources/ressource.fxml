@@ -6,21 +6,13 @@
 <BorderPane xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.RessourceController"
-            prefHeight="600" prefWidth="900">
-
-    <!-- Menu supérieur -->
-    <top>
-        <VBox spacing="10" style="-fx-background-color: #2c3e50; -fx-padding: 15;">
-            <Label text="GESTION DES RESSOURCES" style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;"/>
-
-        </VBox>
-    </top>
+            prefHeight="600" prefWidth="1000">
 
     <!-- Centre avec ListView -->
     <center>
         <VBox spacing="15" style="-fx-padding: 20;">
 
-            <!-- Barre de recherche AJOUTÉE -->
+            <!-- Barre de recherche -->
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label text="Rechercher:" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
                 <TextField fx:id="searchField" promptText="Nom, type ou fournisseur..."
@@ -30,30 +22,29 @@
                 <Button fx:id="btnClearSearch" text="Effacer"
                         style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-cursor: hand;"/>
                 <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- Bouton Nouvelle Ressource -->
+                <Button text="➕ Nouvelle Ressource"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 8 15;"
+                        onAction="#ouvrirAjoutRessource"/>
             </HBox>
 
-            <!-- Boutons d'action -->
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="Liste des Ressources" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button text=" Ajouter" style="-fx-background-color: #27ae60; -fx-text-fill: white;" onAction="#ouvrirAjoutRessource"/>
-                <Button text=" Modifier" style="-fx-background-color: #f39c12; -fx-text-fill: white;" onAction="#ouvrirModifierRessource"/>
-                <Button text="Supprimer" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#supprimerRessource"/>
-                <Button text="Rafraîchir" style="-fx-background-color: #3498db; -fx-text-fill: white;" onAction="#rafraichirListe"/>
-            </HBox>
+            <!-- Titre -->
+            <Label text="Gestion des Ressources"
+                   style="-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-padding: 0 0 10 0;"/>
 
-            <!-- ListView pour les Ressources -->
+            <!-- ListView pour les ressources -->
             <ListView fx:id="listViewRessources" VBox.vgrow="ALWAYS"/>
 
+            <!-- Statistiques -->
+            <HBox spacing="30" style="-fx-background-color: #ecf0f1; -fx-padding: 15;" alignment="CENTER">
+                <Label fx:id="statsTotal" text="Total ressources: 0"
+                       style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                <Label fx:id="statsQuantiteTotale" text="Quantité totale: 0"
+                       style="-fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+                <Label fx:id="statsTypes" text="Types: 0"
+                       style="-fx-font-weight: bold; -fx-text-fill: #3498db;"/>
+            </HBox>
         </VBox>
     </center>
-
-    <!-- Bas de page avec statistiques -->
-    <bottom>
-        <HBox spacing="30" style="-fx-background-color: #ecf0f1; -fx-padding: 15;" alignment="CENTER">
-            <Label fx:id="statsTotal" text="Total Ressources: 0" style="-fx-font-weight: bold;"/>
-            <Label fx:id="statsQuantiteTotale" text="Quantité totale: 0" style="-fx-font-weight: bold;"/>
-            <Label fx:id="statsTypes" text="Types: 0" style="-fx-font-weight: bold;"/>
-        </HBox>
-    </bottom>
 </BorderPane>

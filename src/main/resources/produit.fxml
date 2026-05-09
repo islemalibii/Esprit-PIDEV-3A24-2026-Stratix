@@ -24,17 +24,29 @@
                 <Region HBox.hgrow="ALWAYS"/>
             </HBox>
 
-            <!-- Boutons d'action -->
+            <!-- Boutons d'action avec exports et tri -->
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label text="Gestion des Produits" style="-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text=" Ajouter" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-cursor: hand;"
+
+                <!-- Boutons d'export -->
+                <Button text="📄 PDF" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-cursor: hand;"
+                        onAction="#exporterProduitsPDF"/>
+
+                <!-- Boutons de tri -->
+                <MenuButton text="🔽 Trier par" style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-cursor: hand;">
+                    <items>
+                        <MenuItem text="Prix (croissant)" onAction="#trierParPrix"/>
+                        <MenuItem text="Prix (décroissant)" onAction="#trierParPrix"/>
+                        <MenuItem text="Nom" onAction="#trierParNom"/>
+                        <MenuItem text="Stock" onAction="#trierParStock"/>
+                    </items>
+                </MenuButton>
+
+                <!-- Boutons de gestion -->
+                <Button text="➕ Nouveau Produit" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"
                         onAction="#ouvrirAjoutProduit"/>
-                <Button text="✏ Modifier" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-cursor: hand;"
-                        onAction="#ouvrirModifierProduit"/>
-                <Button text="🗑 Supprimer" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand;"
-                        onAction="#supprimerProduit"/>
-                <Button text=" Rafraîchir" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-cursor: hand;"
+                <Button text="🔄 Rafraîchir" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-cursor: hand;"
                         onAction="#rafraichirListe"/>
             </HBox>
 

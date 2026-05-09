@@ -278,6 +278,22 @@ public class WhiteboardController {
         }
     }
 
+    /**
+     * ⭐ RETOURNE LA COULEUR DU TEXTE SELON LE STATUT ⭐
+     */
+    private String getTextColor(String statut) {
+        switch(statut) {
+            case "A_FAIRE":
+                return "#b91c1c"; // Rouge foncé
+            case "EN_COURS":
+                return "#b45309"; // Orange foncé
+            case "TERMINEE":
+                return "#065f46"; // Vert foncé
+            default:
+                return "#1e293b"; // Gris foncé
+        }
+    }
+
     private VBox createTaskCard(Tache t) {
         VBox card = new VBox(8);
         card.setPadding(new Insets(12));
@@ -341,16 +357,21 @@ public class WhiteboardController {
             }
         });
 
-        // Titre
+        // ⭐ DÉFINIR LA COULEUR DU TEXTE SELON LE STATUT ⭐
+        String textColor = getTextColor(t.getStatut());
+        String secondaryTextColor = "#334155"; // Gris foncé pour les textes secondaires
+
+        // Titre avec couleur foncée
         Label lblTitre = new Label(t.getTitre());
         lblTitre.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         lblTitre.setWrapText(true);
+        lblTitre.setStyle("-fx-text-fill: " + textColor + ";"); // Couleur selon le statut
 
-        // Description (tronquée)
+        // Description avec couleur foncée
         Label lblDescription = new Label(t.getDescription() != null ? t.getDescription() : "");
         lblDescription.setFont(Font.font("Arial", 12));
         lblDescription.setWrapText(true);
-        lblDescription.setStyle("-fx-text-fill: #4b5563;");
+        lblDescription.setStyle("-fx-text-fill: " + secondaryTextColor + ";"); // Gris foncé
         if (t.getDescription() != null && t.getDescription().length() > 50) {
             lblDescription.setText(t.getDescription().substring(0, 50) + "...");
         }
@@ -367,9 +388,11 @@ public class WhiteboardController {
         HBox empBox = new HBox(5);
         empBox.setAlignment(Pos.CENTER_LEFT);
         Label lblEmpIcon = new Label("👤");
+
+        // Employé avec couleur foncée
         Label lblEmp = new Label(empInfo);
         lblEmp.setFont(Font.font("Arial", 11));
-        lblEmp.setStyle("-fx-text-fill: #4b5563;");
+        lblEmp.setStyle("-fx-text-fill: " + secondaryTextColor + ";"); // Gris foncé
         empBox.getChildren().addAll(lblEmpIcon, lblEmp);
 
         // Deadline
@@ -377,8 +400,11 @@ public class WhiteboardController {
         HBox dateBox = new HBox(5);
         dateBox.setAlignment(Pos.CENTER_LEFT);
         Label lblDateIcon = new Label("📅");
+
+        // Date avec couleur foncée
         Label lblDate = new Label(t.getDeadline().toLocalDate().format(formatter));
         lblDate.setFont(Font.font("Arial", 11));
+        lblDate.setStyle("-fx-text-fill: " + secondaryTextColor + ";"); // Gris foncé
         dateBox.getChildren().addAll(lblDateIcon, lblDate);
 
         // Séparateur

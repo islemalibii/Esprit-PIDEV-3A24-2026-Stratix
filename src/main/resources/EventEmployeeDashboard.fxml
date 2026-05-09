@@ -10,7 +10,7 @@
         <Insets top="25" right="30" bottom="25" left="30"/>
     </padding>
 
-    <Label text="Catalogue des Événements (Espace Employé)" styleClass="heading-medium"/>
+    <Label text="Catalogue des Événements" styleClass="heading-medium"/>
 
     <HBox alignment="CENTER_LEFT" spacing="15" >
         <TextField fx:id="searchField" onKeyReleased="#search"

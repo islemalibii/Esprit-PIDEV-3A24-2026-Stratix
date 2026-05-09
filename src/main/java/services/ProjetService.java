@@ -117,34 +117,6 @@ public class ProjetService implements ProjServices {
         return null;
     }
 
-    public void mettreAJourProgression(int projetId) {
-
-        String sqlCount = "SELECT COUNT(*) as total, " +
-                "SUM(CASE WHEN statut = 'TERMINEE' THEN 1 ELSE 0 END) as terminees " +
-                "FROM tache WHERE projet_id = ?";
-
-        try (PreparedStatement ps = connection.prepareStatement(sqlCount)) {
-            ps.setInt(1, projetId);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                int total = rs.getInt("total");
-                int terminees = rs.getInt("terminees");
-
-                int progression = (total > 0) ? (terminees * 100) / total : 0;
-
-                String sqlUpdate = "UPDATE projet SET progression = ? WHERE id = ?";
-                try (PreparedStatement psUpdate = connection.prepareStatement(sqlUpdate)) {
-                    psUpdate.setInt(1, progression);
-                    psUpdate.setInt(2, projetId);
-                    psUpdate.executeUpdate();
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 
 
     @Override
@@ -209,5 +181,149 @@ public class ProjetService implements ProjServices {
     private String nettoyerNomsEquipe(String bruts) {
         if (bruts == null || bruts.isEmpty()) return "Aucun membre";
         return bruts.replaceAll("\\d+\\s*-\\s*", "");
+    }
+
+
+
+
+    public List<Projet> getAllProjets() {
+        List<Projet> list = new ArrayList<>();
+        String sql = "SELECT * FROM projet WHERE is_archived = 0 ORDER BY id DESC";
+
+        try (Connection conn = MyDataBase.getInstance().getCnx();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                list.add(extractProjetFromResultSet(rs));
+            }
+            System.out.println("✅ " + list.size() + " projets chargés");
+
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur getAllProjets: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public Projet getProjetById(int id) {
+        String sql = "SELECT * FROM projet WHERE id = ?";
+
+        try (Connection conn = MyDataBase.getInstance().getCnx();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return extractProjetFromResultSet(rs);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur getProjetById: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void mettreAJourProgression(int projetId) {
+        System.out.println("\n🔄 ===== MISE À JOUR PROGRESSION =====");
+        System.out.println("🔄 Projet ID: " + projetId);
+
+        Projet projet = getProjetById(projetId);
+        if (projet == null) {
+            System.out.println("❌ ERREUR: Projet ID " + projetId + " n'existe pas!");
+            return;
+        }
+        System.out.println("✅ Projet trouvé: " + projet.getNom());
+
+        String sqlTaches = "SELECT id, titre, statut FROM tache WHERE projet_id = ?";
+        try (Connection conn = MyDataBase.getInstance().getCnx();
+             PreparedStatement ps = conn.prepareStatement(sqlTaches)) {
+
+            ps.setInt(1, projetId);
+            ResultSet rs = ps.executeQuery();
+
+            System.out.println("📋 Tâches du projet:");
+            boolean hasTasks = false;
+            while (rs.next()) {
+                hasTasks = true;
+                System.out.println("   - ID: " + rs.getInt("id") +
+                        " | Titre: " + rs.getString("titre") +
+                        " | Statut: '" + rs.getString("statut") + "'");
+            }
+            if (!hasTasks) {
+                System.out.println("   ⚠️ Aucune tâche trouvée pour ce projet");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur affichage tâches: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        String sqlCount = "SELECT " +
+                "COUNT(*) as total, " +
+                "SUM(CASE WHEN statut = 'TERMINEE' THEN 1 ELSE 0 END) as terminees " +
+                "FROM tache WHERE projet_id = ?";
+
+        try (Connection conn = MyDataBase.getInstance().getCnx();
+             PreparedStatement ps = conn.prepareStatement(sqlCount)) {
+
+            ps.setInt(1, projetId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int total = rs.getInt("total");
+                int terminees = rs.getInt("terminees");
+
+                System.out.println("📊 RÉSULTATS DU CALCUL:");
+                System.out.println("   - Total tâches: " + total);
+                System.out.println("   - Tâches terminées (TERMINEE): " + terminees);
+
+                int progression = 0;
+                if (total > 0) {
+                    progression = (terminees * 100) / total;
+                }
+
+                System.out.println("   📈 Progression calculée: " + progression + "%");
+
+                String sqlUpdate = "UPDATE projet SET progression = ? WHERE id = ?";
+                try (PreparedStatement psUpdate = conn.prepareStatement(sqlUpdate)) {
+                    psUpdate.setInt(1, progression);
+                    psUpdate.setInt(2, projetId);
+                    int rowsAffected = psUpdate.executeUpdate();
+
+                    if (rowsAffected > 0) {
+                        System.out.println("✅ SUCCÈS: Progression mise à jour à " + progression + "%");
+                    } else {
+                        System.out.println("⚠️ Aucune ligne mise à jour - Vérifie l'ID du projet");
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur mise à jour progression: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        System.out.println("🔄 ===== FIN MISE À JOUR =====\n");
+    }
+
+    private Projet extractProjetFromResultSet(ResultSet rs) throws SQLException {
+        Projet p = new Projet();
+        p.setId(rs.getInt("id"));
+        p.setNom(rs.getString("nom"));
+        p.setDescription(rs.getString("description"));
+        p.setDateDebut(rs.getDate("date_debut"));
+        p.setDateFin(rs.getDate("date_fin"));
+        p.setBudget(rs.getDouble("budget"));
+        p.setStatut(rs.getString("statut"));
+        p.setProgression(rs.getInt("progression"));
+        p.setArchived(rs.getBoolean("is_archived"));
+
+        try { p.setResponsableId(rs.getInt("responsable_id")); } catch (SQLException e) { p.setResponsableId(0); }
+        try { p.setEquipeMembres(rs.getString("equipe_membres")); } catch (SQLException e) { p.setEquipeMembres(""); }
+
+        return p;
     }
 }

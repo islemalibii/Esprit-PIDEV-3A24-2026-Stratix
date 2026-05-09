@@ -4,54 +4,75 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox spacing="20" styleClass="modern-container" xmlns="http://javafx.com/javafx/17"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ServiceTabController">
+<StackPane xmlns="http://javafx.com/javafx/17"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="controllers.ServiceTabController"
+           style="-fx-background-color: #f5f7fa;">
 
-    <HBox styleClass="sub-nav-bar" spacing="5" alignment="CENTER_LEFT">
-        <Button text=" Liste des services" fx:id="btnServicesView" onAction="#showServicesList" styleClass="sub-nav-button-active"/>
-        <Button text=" Statistiques" fx:id="btnStatsView" onAction="#showStatistics" styleClass="sub-nav-button"/>
-        <Region HBox.hgrow="ALWAYS"/>
-    </HBox>
-
-    <VBox styleClass="converter-section" spacing="10">
-        <Label text="Convertisseur de Devises" styleClass="converter-title"/>
-        <HBox spacing="15" alignment="CENTER_LEFT">
-            <TextField fx:id="txtMontantDT" promptText="Montant en DT" prefWidth="150" styleClass="converter-field"/>
-            <Label text="TND" styleClass="converter-currency"/>
-            <Label text="→" styleClass="converter-arrow"/>
-            <TextField fx:id="txtMontantUSD" editable="false" prefWidth="150" styleClass="converter-field" promptText="USD"/>
-            <TextField fx:id="txtMontantEUR" editable="false" prefWidth="150" styleClass="converter-field" promptText="EUR"/>
-            <Button text="Convertir" onAction="#handleConvertir" styleClass="converter-button"/>
+    <VBox spacing="20" styleClass="modern-container">
+        <HBox styleClass="sub-nav-bar" spacing="5" alignment="CENTER_LEFT">
+            <Button text=" Liste des services" fx:id="btnServicesView" onAction="#showServicesList" styleClass="sub-nav-button-active"/>
+            <Button text=" Statistiques" fx:id="btnStatsView" onAction="#showStatistics" styleClass="sub-nav-button"/>
+            <Region HBox.hgrow="ALWAYS"/>
         </HBox>
+
+        <VBox styleClass="converter-section" spacing="10">
+            <Label text="Convertisseur de Devises" styleClass="converter-title"/>
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <TextField fx:id="txtMontantDT" promptText="Montant en DT" prefWidth="150" styleClass="converter-field"/>
+                <Label text="TND" styleClass="converter-currency"/>
+                <Label text="→" styleClass="converter-arrow"/>
+                <TextField fx:id="txtMontantUSD" editable="false" prefWidth="150" styleClass="converter-field" promptText="USD"/>
+                <TextField fx:id="txtMontantEUR" editable="false" prefWidth="150" styleClass="converter-field" promptText="EUR"/>
+                <Button text="Convertir" onAction="#handleConvertir" styleClass="converter-button"/>
+            </HBox>
+        </VBox>
+
+        <StackPane fx:id="contentPane" VBox.vgrow="ALWAYS">
+            <VBox fx:id="servicesListView" spacing="20" managed="true" visible="true">
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                    <TextField fx:id="searchField" promptText="Rechercher un service..." prefWidth="300" styleClass="modern-search"/>
+                    <ComboBox fx:id="filterType" promptText="Tous" prefWidth="120" styleClass="modern-combo"/>
+                    <Button text="Rechercher" onAction="#handleSearch" styleClass="modern-button-primary"/>
+                </HBox>
+
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Button text="📄 Exporter PDF" onAction="#handleExporterPDF" styleClass="modern-button-pdf"/>
+                    <Button fx:id="btnArchives" text="📦 Archives" onAction="#handleVoirArchives" styleClass="modern-button-archive"/>
+                    <Button text="+ Nouveau service" onAction="#handleAjouter" styleClass="modern-button-add"/>
+                    <Button fx:id="btnVisio" text="▶ Start Meet" onAction="#openVisio"
+                            style="-fx-background-color: #1a73e8; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 30; -fx-padding: 8 20; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(26,115,232,0.3), 10, 0, 0, 2);"/>
+                    <Button fx:id="btnRetour" text="⬅ Retour" onAction="#handleRetour" styleClass="modern-button-retour" visible="false"/>
+                </HBox>
+
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="modern-scroll">
+                    <GridPane fx:id="servicesGrid" hgap="20" vgap="20" styleClass="cards-grid">
+                        <padding>
+                            <Insets top="10" right="10" bottom="10" left="10"/>
+                        </padding>
+                    </GridPane>
+                </ScrollPane>
+            </VBox>
+
+            <VBox fx:id="statisticsView" spacing="20" managed="false" visible="false">
+                <fx:include source="statistiques-tab.fxml"/>
+            </VBox>
+        </StackPane>
     </VBox>
 
-    <StackPane fx:id="contentPane" VBox.vgrow="ALWAYS">
-        <VBox fx:id="servicesListView" spacing="20" managed="true" visible="true">
-            <HBox alignment="CENTER_LEFT" spacing="15">
-                <TextField fx:id="searchField" promptText="Rechercher un service..." prefWidth="300" styleClass="modern-search"/>
-                <ComboBox fx:id="filterType" promptText="Tous" prefWidth="120" styleClass="modern-combo"/>
-                <Button text="Rechercher" onAction="#handleSearch" styleClass="modern-button-primary"/>
-            </HBox>
+    <StackPane fx:id="assistantBubble"
+               style="-fx-background-radius: 30; -fx-background-color: linear-gradient(to bottom right, #8b5cf6, #6d28d9); -fx-min-width: 70; -fx-min-height: 70; -fx-max-width: 70; -fx-max-height: 70; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(109,40,217,0.4), 15, 0, 0, 5);"
+               onMouseClicked="#toggleAssistant"
+               StackPane.alignment="BOTTOM_RIGHT">
+        <StackPane.margin>
+            <Insets bottom="38" right="38"/> <!-- 1cm = 38px -->
+        </StackPane.margin>
 
-            <HBox alignment="CENTER_RIGHT" spacing="10">
-                <Button text="📄 Exporter PDF" onAction="#handleExporterPDF" styleClass="modern-button-pdf"/>
-                <Button fx:id="btnArchives" text="📦 Archives" onAction="#handleVoirArchives" styleClass="modern-button-archive"/>
-                <Button text="+ Nouveau service" onAction="#handleAjouter" styleClass="modern-button-add"/>
-                <Button fx:id="btnRetour" text="⬅ Retour" onAction="#handleRetour" styleClass="modern-button-retour" visible="false"/>
-            </HBox>
+        <Label text="🤖" style="-fx-font-size: 40px; -fx-text-fill: white; -fx-rotate: 5;"/>
 
-            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="modern-scroll">
-                <GridPane fx:id="servicesGrid" hgap="20" vgap="20" styleClass="cards-grid">
-                    <padding>
-                        <Insets top="10" right="10" bottom="10" left="10"/>
-                    </padding>
-                </GridPane>
-            </ScrollPane>
-        </VBox>
-
-        <VBox fx:id="statisticsView" spacing="20" managed="false" visible="false">
-            <fx:include source="statistiques-tab.fxml"/>
-        </VBox>
+        <StackPane style="-fx-background-color: #ef4444; -fx-background-radius: 12; -fx-min-width: 24; -fx-min-height: 24; -fx-max-width: 24; -fx-max-height: 24; -fx-translate-x: 15; -fx-translate-y: -15; -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.4), 5, 0, 0, 2);">
+            <Label text="1" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+        </StackPane>
     </StackPane>
 
-</VBox>
+</StackPane>

@@ -16,15 +16,15 @@
             <Button text="📅 Mon Planning" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 50; -fx-cursor: hand;"/>
         </HBox>
         <Region HBox.hgrow="ALWAYS" />
-        <Label fx:id="lbWelcomeName" style="-fx-font-size: 14px; -fx-background-color: #e2e8f0; -fx-padding: 8 15; -fx-background-radius: 20; -fx-text-fill: #334155;" text="👤 ryhab" />
+        <Label fx:id="lbWelcomeName" style="-fx-font-size: 14px; -fx-background-color: #e2e8f0; -fx-padding: 8 15; -fx-background-radius: 20; -fx-text-fill: #334155;" />
     </HBox>
 
     <!-- Section de bienvenue avec statistiques -->
     <HBox spacing="20" alignment="CENTER">
         <VBox spacing="5" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-size: 14px; -fx-text-fill: #64748b;" text="Votre planning," />
-            <Label style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Ryhab Soltani" />
-            <Label style="-fx-font-size: 14px; -fx-text-fill: #3b82f6;" text="👤 Employé" />
+            <Label style="-fx-font-size: 14px; -fx-text-fill: #64748b;"  />
+            <Label style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" />
+            <Label style="-fx-font-size: 14px; -fx-text-fill: #3b82f6;" />
         </VBox>
 
         <!-- Cartes statistiques rapides -->

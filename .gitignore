@@ -39,4 +39,15 @@ build/
 .DS_Store
 
 ### Session ###
+<<<<<<< Updated upstream
 session.properties
+=======
+session.properties
+
+### Environment Variables & Secrets ###
+.env
+credentials.json
+client_secret*.json
+token.json
+src/main/resources/google-oauth.properties
+>>>>>>> Stashed changes

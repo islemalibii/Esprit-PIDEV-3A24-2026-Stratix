@@ -11,33 +11,32 @@ public class MyDataBase {
     private static final String PASSWORD = "";
     private Connection cnx;
 
-    private MyDataBase(){
+    private MyDataBase() {
+        connect();
+    }
+
+    private void connect() {
         try {
-            cnx = DriverManager.getConnection(URL,USER,PASSWORD);
-            System.out.println("Connected to database");
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            System.err.println("Erreur de connexion à la base de données: " + e.getMessage());
-            System.err.println("Vérifiez que MySQL est démarré et que la base 'stratix' existe.");
-            // Ne pas lancer d'exception, juste logger l'erreur
-            this.cnx = null;
+            this.cnx= DriverManager.getConnection(URL,USER,PASSWORD);
+            System.out.println("connected...");
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());;
         }
 
     }
-    public static MyDataBase getInstance(){
-        if(instance == null)
+
+public static MyDataBase getInstance(){
+    try {
+        if (instance == null || instance.getCnx() == null || instance.getCnx().isClosed()) {
             instance = new MyDataBase();
-        return instance;
+        }
+    } catch (SQLException e) {
+        System.err.println("Failed to reconnect to database: " + e.getMessage());
     }
+    return instance;
+}
 
     public Connection getCnx() {
-        try {
-            if (cnx == null || cnx.isClosed()) {
-                cnx = DriverManager.getConnection(URL, USER, PASSWORD);
-            }
-        } catch (SQLException e) {
-            System.err.println("Database Reconnection Error: " + e.getMessage());
-        }
         return cnx;
     }
 }

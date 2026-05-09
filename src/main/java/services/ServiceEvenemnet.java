@@ -2,7 +2,6 @@ package services;
 
 import interfaces.Services;
 import models.Evenement;
-import models.Ressource;
 import models.enums.EventStatus;
 import models.enums.EventType;
 import utils.MyDataBase;
@@ -10,6 +9,10 @@ import utils.MyDataBase;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.nio.file.*;
+import java.util.UUID;
+import java.io.File;
 
 public class ServiceEvenemnet implements Services<Evenement> {
 
@@ -21,8 +24,8 @@ public class ServiceEvenemnet implements Services<Evenement> {
     @Override
     public void add(Evenement evenement) {
 
-        String req = "INSERT INTO evenement(type_event, date_event, description, statut, lieu, titre, image_url) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)"; // l values ywalou treated as data mch sql ynajm yexecuta : protection contre l sql injection
+        String req = "INSERT INTO evenement(type_event, date_event, description, statut, lieu, titre, image_url, latitude, longitude, isArchived, recurrence) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // l values ywalou treated as data mch sql ynajm yexecuta : protection contre l sql injection
 
         try (PreparedStatement pst = cnx.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);) {
 
@@ -33,22 +36,14 @@ public class ServiceEvenemnet implements Services<Evenement> {
             pst.setString(5, evenement.getLieu());
             pst.setString(6, evenement.getTitre());
             pst.setString(7, evenement.getImageUrl());
+            pst.setDouble(8, evenement.getLatitude());
+            pst.setDouble(9, evenement.getLongitude());
 
+            pst.setInt(10, 0);          // 0 = false (not archived)
+            pst.setString(11, "none");
             pst.executeUpdate();
 
 
-            ResultSet rs = pst.getGeneratedKeys();
-
-            if (rs.next()) {
-                int eventId = rs.getInt(1);
-                evenement.setId(eventId);
-
-                ServiceEventRessource link = new ServiceEventRessource();
-
-                for (Ressource r : evenement.getRessources()) {
-                    link.addRessourceToEvent(eventId, r.getid(), r.getQuatite());
-                }
-            }
             System.out.println("Evenement added successfully");
 
         } catch (SQLException e) {
@@ -61,7 +56,8 @@ public class ServiceEvenemnet implements Services<Evenement> {
     @Override
     public void update(Evenement evenement) {
 
-        String req = "update evenement set type_event=? , date_event=? , description=? , statut=? , lieu=? , titre=?, image_url=? where id=?";
+        String req = "update evenement set type_event=? , date_event=? , description=? , statut=? , lieu=? , titre=?, image_url=?, latitude=?, longitude=?, recurrence=? "+
+                " where id=?";
         try{
             PreparedStatement pst = cnx.prepareStatement(req);
 
@@ -72,7 +68,11 @@ public class ServiceEvenemnet implements Services<Evenement> {
             pst.setString(5, evenement.getLieu());
             pst.setString(6, evenement.getTitre());
             pst.setString(7, evenement.getImageUrl());
-            pst.setInt(8, evenement.getId());
+            pst.setDouble(8, evenement.getLatitude());
+            pst.setDouble(9, evenement.getLongitude());
+            pst.setString(10, "none"); // Keeps recurrence valid
+            pst.setInt(11, evenement.getId());
+
 
             pst.executeUpdate();
             System.out.println("evenement modifie");
@@ -112,6 +112,8 @@ public class ServiceEvenemnet implements Services<Evenement> {
                 e.setArchived(rs.getInt("isArchived") == 1);
                 e.setImageUrl(rs.getString("image_url"));
 
+                e.setLatitude(rs.getDouble("latitude"));
+                e.setLongitude(rs.getDouble("longitude"));
                 list.add(e);
             }
         } catch (SQLException ex) {
@@ -227,6 +229,8 @@ public class ServiceEvenemnet implements Services<Evenement> {
                 e.setStatut(EventStatus.valueOf(rs.getString("statut")));
                 e.setType_event(EventType.valueOf(rs.getString("type_event")));
 
+                e.setLatitude(rs.getDouble("latitude"));
+                e.setLongitude(rs.getDouble("longitude"));
                 list.add(e);
             }
         } catch (SQLException ex) {
@@ -292,6 +296,23 @@ public class ServiceEvenemnet implements Services<Evenement> {
             System.out.println(ex.getMessage());
         }
         return list;
+    }
+
+
+    public String saveImageToProject(File sourceFile) throws Exception {
+        String uploadPath = "C:/Users/islem/stratix_web/public/uploads/events/";
+
+        String extension = "";
+        int i = sourceFile.getName().lastIndexOf('.');
+        if (i > 0) { extension = sourceFile.getName().substring(i); }
+
+        String newFileName = UUID.randomUUID().toString().substring(0, 13) + extension;
+
+        Path destination = Paths.get(uploadPath + newFileName);
+
+        Files.copy(sourceFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+
+        return newFileName;
     }
 
 

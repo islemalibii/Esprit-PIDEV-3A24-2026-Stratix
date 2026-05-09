@@ -21,6 +21,7 @@ import models.enums.EventStatus;
 import models.enums.EventType;
 import services.EventEmailApi;
 import services.ServiceEvenemnet;
+import services.ServiceEventParticipation;
 
 
 import java.io.IOException;
@@ -136,6 +137,17 @@ public class EventEmployeeController {
                 participeBtn.setDisable(true);
                 new Thread(() -> {
                     try {
+                        ServiceEventParticipation partService = new ServiceEventParticipation();
+
+                        if (partService.alreadyParticipated(e.getId(), userEmail)) {
+                            javafx.application.Platform.runLater(() -> {
+                                participeBtn.setText("Déjà inscrit");
+                                participeBtn.setDisable(true);
+                            });
+                            return;
+                        }
+
+                        partService.addParticipation(e.getId(), userEmail);
                         EventEmailApi.sendEmail(userEmail, e.getTitre(), e.getDate_event().toString());
                         javafx.application.Platform.runLater(() -> {
                             participeBtn.setText("Inscrit ");

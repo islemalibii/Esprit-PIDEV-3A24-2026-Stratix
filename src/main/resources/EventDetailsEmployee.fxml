@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.image.*?>
 
-<ScrollPane fitToWidth="true" styleClass="scroll-pane"
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<ScrollPane fitToWidth="true" styleClass="scroll-pane" stylesheets="@/style/global.css"
             xmlns="http://javafx.com/javafx/20"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.EventDetailsEmployeeController">
@@ -38,6 +40,12 @@
                     </VBox>
 
                     <Separator />
+                    <VBox VBox.vgrow="ALWAYS" spacing="10" style="-fx-padding: 10 0;">
+                        <WebView fx:id="mapView" minHeight="250" prefHeight="300" VBox.vgrow="ALWAYS" />
+                    </VBox>
+
+
+
 
                     <VBox fx:id="qrCodeContainer" spacing="10" alignment="CENTER" style="-fx-background-color: #F8FAFC; -fx-padding: 15; -fx-background-radius: 15;">
                         <Label text="Scannez pour donner votre avis :" styleClass="input-label" />

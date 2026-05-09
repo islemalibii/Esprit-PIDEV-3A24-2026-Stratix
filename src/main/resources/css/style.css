@@ -919,3 +919,16 @@
     -fx-background-color: #FEB2B2;
     -fx-text-fill: white;
 }
+.modern-button-info {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-padding: 8 16;
+    -fx-background-radius: 25;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.modern-button-info:hover {
+    -fx-background-color: #2980b9;
+}
+

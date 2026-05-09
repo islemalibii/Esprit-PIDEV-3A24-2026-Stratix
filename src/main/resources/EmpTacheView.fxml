@@ -16,15 +16,15 @@
             <Button text="📅 Mon Planning" onAction="#showMonPlanning" style="-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 10 25; -fx-background-radius: 50; -fx-cursor: hand;"/>
         </HBox>
         <Region HBox.hgrow="ALWAYS" />
-        <Label fx:id="lblDateDuJour" style="-fx-font-size: 14px; -fx-background-color: #e2e8f0; -fx-padding: 8 15; -fx-background-radius: 20; -fx-text-fill: #334155;" text="📅 Aujourd'hui, 27/02/2026" />
+        <Label fx:id="lblDateDuJour" style="-fx-font-size: 14px; -fx-background-color: #e2e8f0; -fx-padding: 8 15; -fx-background-radius: 20; -fx-text-fill: #334155;" />
     </HBox>
 
     <!-- Section de bienvenue avec stats -->
     <HBox spacing="20" alignment="CENTER">
         <VBox spacing="5" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-size: 14px; -fx-text-fill: #64748b;" text="Bonjour," />
-            <Label fx:id="lblWelcomeName" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Ryhab Soltani" />
-            <Label fx:id="lblWelcomeRole" style="-fx-font-size: 14px; -fx-text-fill: #3b82f6;" text="👤 Employé" />
+            <Label fx:id="lblWelcomeName" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0f172a;" />
+            <Label fx:id="lblWelcomeRole" style="-fx-font-size: 14px; -fx-text-fill: #3b82f6;"  />
         </VBox>
 
         <!-- Cartes statistiques -->

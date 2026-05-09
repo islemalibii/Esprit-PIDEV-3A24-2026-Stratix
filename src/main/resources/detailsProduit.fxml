@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.DetailsProduitController"
+            prefHeight="700" prefWidth="600"
+            style="-fx-background-color: white;">
+
+    <top>
+        <VBox spacing="10" style="-fx-background-color: #2c3e50; -fx-padding: 20;">
+            <Label fx:id="titreLabel" text="Détails du produit"
+                   style="-fx-text-fill: white; -fx-font-size: 22; -fx-font-weight: bold; -fx-alignment: center;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <VBox spacing="20" style="-fx-padding: 25;">
+
+                <!-- Image -->
+                <HBox alignment="CENTER">
+                    <ImageView fx:id="imageView" fitHeight="200" fitWidth="200" preserveRatio="true"
+                               style="-fx-border-color: #ddd; -fx-border-width: 2; -fx-border-radius: 5;"/>
+                </HBox>
+
+                <!-- Informations du produit -->
+                <TitledPane text="Informations générales" expanded="true">
+                    <GridPane hgap="15" vgap="10" style="-fx-padding: 10;">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="30"/>
+                            <ColumnConstraints percentWidth="70"/>
+                        </columnConstraints>
+
+                        <Label text="Nom:" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="nomLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Description:" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <Label fx:id="descriptionLabel" wrapText="true" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Catégorie:" style="-fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <Label fx:id="categorieLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="Prix:" style="-fx-font-weight: bold;" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <Label fx:id="prixLabel" style="-fx-text-fill: #27ae60;" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <Label text="Stock:" style="-fx-font-weight: bold;" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <Label fx:id="stockLabel" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                    </GridPane>
+                </TitledPane>
+
+                <!-- Dates -->
+                <TitledPane text="Dates" expanded="true">
+                    <GridPane hgap="15" vgap="10" style="-fx-padding: 10;">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="30"/>
+                            <ColumnConstraints percentWidth="70"/>
+                        </columnConstraints>
+
+                        <Label text="Date création:" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="dateCreationLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Date fabrication:" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <Label fx:id="dateFabricationLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Date péremption:" style="-fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <Label fx:id="datePeremptionLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="Date garantie:" style="-fx-font-weight: bold;" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <Label fx:id="dateGarantieLabel" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                    </GridPane>
+                </TitledPane>
+
+                <!-- Ressources et Détails -->
+                <TitledPane text="Ressources et Détails" expanded="true">
+                    <GridPane hgap="15" vgap="10" style="-fx-padding: 10;">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="30"/>
+                            <ColumnConstraints percentWidth="70"/>
+                        </columnConstraints>
+
+                        <Label text="Ressources:" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="ressourcesLabel" wrapText="true" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Détails:" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextArea fx:id="detailsLabel" wrapText="true" editable="false"
+                                  prefRowCount="4" style="-fx-background-color: #f9f9f9;"
+                                  GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    </GridPane>
+                </TitledPane>
+
+                <!-- Statut -->
+                <Label fx:id="statutLabel" style="-fx-font-weight: bold; -fx-font-size: 14px;"
+                       maxWidth="Infinity" alignment="CENTER"/>
+
+                <!-- Bouton fermer -->
+                <HBox alignment="CENTER">
+                    <Button text="Fermer" onAction="#fermer"
+                            style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-padding: 10 30;"/>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

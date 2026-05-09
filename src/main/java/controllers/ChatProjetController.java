@@ -117,10 +117,10 @@ public class ChatProjetController {
         VBox msgWrapper = new VBox(3);
         boolean isMe = sender.equals(myName);
 
-
         String heure = new SimpleDateFormat("HH:mm").format(new Date(timestamp));
         Label headerLbl = new Label(isMe ? "Moi • " + heure : sender + " • " + heure);
         headerLbl.setStyle("-fx-font-size: 10px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;");
+
         Label contentLbl = new Label(content);
         contentLbl.setWrapText(true);
         contentLbl.setMaxWidth(280);

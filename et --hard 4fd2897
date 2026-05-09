@@ -1,0 +1,166 @@
+[33mceb0c94[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mryhabbb[m[33m)[m remove api
+[33m76ff3da[m modifierrr le formulaire et se sup le table view of planning
+[33me66eecc[m ouur new chat ia
+[33m4fd2897[m[33m ([m[1;31morigin/ryhabbb[m[33m)[m modif in calendar
+[33mc475b8b[m modif in tachee
+[33m710040f[m services pas touche just modifiee
+[33mb7bbfac[m whiteboard
+[33m231a509[m espace employe modifie en efface le table vieww
+[33m861edec[m after pull
+[33m51d2343[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix package case mismatch (Services -> services)
+[33md273553[m fix
+[33m4334a1e[m Merge branch 'islem'
+[33m2bfa7c8[m servicesfix
+[33mb04bee1[m FIXtests
+[33m66c50d7[m FIX
+[33m813704f[m ResourcesFIX
+[33m730e6d1[m resourcesFIX
+[33m21dd8a7[m secondEventApiAdded
+[33m125500b[m rahmaMerged
+[33mc209aff[m mainFxFIX
+[33m7d5fd46[m RyhabMergedFix
+[33m55f4fa5[m RyhabMerged
+[33m2041b94[m EyaMerged
+[33m341f43d[m AmeniMerged
+[33mcb003bc[m suup d id
+[33m714fff1[m crud modiff plann
+[33ma7b9e45[m crud modiff
+[33mceee6ff[m les ids
+[33m614ae9d[m changement du nom de packag(utils)
+[33m946b6e2[m ratingFix
+[33m1470727[m mergeWithTaha
+[33m47cadfc[m QRCodeApiAdded
+[33mca3ae38[m FeedbackAdd
+[33ma082d47[m deconx en dashboard
+[33mb16bced[m verif de liste dans lespace emp
+[33mb05d640[m dashboard demp et local
+[33m263cba4[m cssCleanUp
+[33mb3ca6ab[m cssFix
+[33ma87c50b[m Ajouter Role (Admin,employee)
+[33ma265410[m Ajouter le convertisseur de devises dans la page des services API
+[33mb3c797c[m génération PDF
+[33m725f717[m merge29
+[33m5b8756c[m changer de VBox vers HBox
+[33m9b03cad[m modifier le style css
+[33m2167c54[m fix the place of ajouter service
+[33ma1ea567[m Ajouter sidebar
+[33mbb1a4b9[m dashboards avec api notes
+[33m914d250[m code qr API (détails du projet)
+[33mc6396c2[m date debut < date fin
+[33m1be3394[m Ajouter la navigation entre la liste des services et les statistiques dans l'onglet Services
+[33m2680883[m ajout affectation de projet à un chef et une equipe
+[33ma986488[m dashboards et search
+[33m58ba3c4[m les conges et ls maladies en planning
+[33mdbe8d50[m suppression des CSS inutilisés
+[33med3c440[m Empêcher l'archivage des catégories avec des services actifs (intégrité des données)
+[33mf46b907[m moderniser la page des catégories avec un design de cartes
+[33m4c359b5[m moderniser la page des services avec un design de cartes
+[33m4607df7[m merge28
+[33m839552b[m merge27
+[33m0356296[m merge26
+[33m10fbfac[m merge25
+[33m4d901c0[m merge23
+[33mc54c5e6[m staatschart
+[33mb59f0a6[m ImagesAdded
+[33m74ddd38[m AdminDetailPageAdded
+[33m2c18d1f[m FilterByTypeAdded
+[33mee84a07[m pdf exporter
+[33m2449c47[m excel exporter
+[33mc757e4c[m por le api meteo
+[33m2fb7756[m ressourcesFix
+[33m83b226d[m merge23
+[33m24391a4[m merge22
+[33m549ba4f[m merge21
+[33mbc4ce46[m merge20
+[33m1665e29[m merge19
+[33m998c5bf[m merge18
+[33m93249fd[m merge17
+[33m56d029d[m merge16
+[33m17bc772[m merge14
+[33m69b5224[m dashbordstattt(bien)
+[33m4f3310b[m dashboardeecontroller(bien)
+[33m3565f97[m calendarcontroller(bien)
+[33m9f9f91d[m merge13
+[33ma61b46f[m whitboardercontroller(bien)
+[33m81ccc82[m whitboardercontroller(bien)
+[33meabb072[m calendar(view)bien
+[33mb22e3ec[m merge12
+[33mbc3a756[m merge10
+[33me513a36[m merge10
+[33m3a8a3fc[m pour la serviceplann
+[33mc06e131[m pour la tacheservice
+[33mff62115[m pour la tachecontrollerrr
+[33md8a8ef6[m merge9
+[33mcd2a986[m pour le service planning
+[33mfda54ff[m model(planning)
+[33mef310d9[m model(tache)
+[33ma44d94a[m merge9
+[33maa0e3c3[m calendarcontroller(comentaire)
+[33mc214ebe[m calendarcontroller(coments)
+[33m831fee2[m le model employee java
+[33mbec4cab[m merge6
+[33mf54d9f3[m Ajouter un module de statistiques avec des graphiques et des indicateurs clés de performance (KPI)
+[33m2d9cbc2[m Ajouter une fonctionnalité d'exportation PDF avec Apache PDFBox
+[33m16ffe72[m rendre la date de création non modifiable et automatiquement à aujourd'hui
+[33m3aa1869[m implémenter le système de désactivation/activation au lieu de la suppression définitive
+[33ma5aaed0[m uniquement la validation d'unicité pour l'email et le CIN
+[33m4b2bef1[m 2FA
+[33m6b1f984[m 2FA
+[33m27438b3[m 2FA
+[33m5269446[m mote de passe oblier
+[33m45cc141[m COMPTEUR À REBOURS
+[33m064c99b[m test unitaire servicetache
+[33m8c30412[m[33m ([m[1;31morigin/tahaa[m[33m)[m COMPTEUR À REBOURS
+[33m13e01da[m oblier mtp ENVOI D'EMAIL PAR MAIL
+[33m4455717[m[33m ([m[1;31morigin/ameniii[m[33m)[m remplacer l'ID du responsable par son nom dans l'affichage
+[33mde06b6e[m AUTHENTIFICATION AVANCÉE - COMPLÈTE
+[33m3e653fc[m eviter les message erreur
+[33mcdc4e69[m[33m ([m[1;31morigin/rahmaa[m[33m)[m merge4
+[33m985b953[m  merge3
+[33mf8da6c8[m[33m ([m[1;31morigin/eyaaa[m[33m)[m ajout css2
+[33ma2b7218[m implémentation de la fonctionnalité d'archivage au lieu de la suppression définitive
+[33mc38e0f7[m merge1
+[33m152f396[m déplacer la logique de recherche vers la couche service
+[33md3aaf74[m ajout css
+[33m555374e[m merge
+[33mb163c8e[m logo
+[33m43819f6[m logo
+[33me619db2[m side bar(employé , admin)
+[33mc07c3c4[m ajout de l'espace employé
+[33m6a4f4ab[m desarchiver+supprimer de la liste des archives +attribut is_archived
+[33m64b71e3[m suppression de la colonne ID
+[33m9d505eb[m suppression de la colonne ID
+[33mb8e452b[m la partie crud gestion des services
+[33m4563710[m eviter les message erreur
+[33md2c6d11[m   implémenter un système de session persistante qui garde l'utilisateur connecté même après fermeture de l'application
+[33m615757d[m  contrôles de saisie
+[33mc744d90[m  contrôles de saisie
+[33m133c541[m modification style
+[33m8380ffc[m modification style
+[33mb2aa3ad[m[33m ([m[1;31morigin/islem[m[33m)[m DetailEmployee_added
+[33m6feb177[m modification style
+[33me1bfa3c[m modification style
+[33ma36f6d7[m modification style
+[33mc4180e4[m search+filter+employee_Fixes
+[33m8ddd04d[m modification couleur
+[33me6cbb1a[m employeeSide_added
+[33m3c3cbdb[m Design & Dynamic HBox
+[33mf881e9a[m Sidebar_Added
+[33mb8ac7fc[m modifier Ajout
+[33m7965fd2[m supprimer l'affichage de l'ID dans les cartes du dashboard
+[33m245245e[m Ressouce_Added
+[33m7706a0f[m premier commit - projet stratix
+[33mf797d0f[m Tri_Added
+[33m4ef753d[m CardViewFixes
+[33mbfb1e6a[m Premier commit
+[33m5ca02c4[m ArchiverFix
+[33m63a0715[m dateFIX
+[33mfeacc7e[m searchFix
+[33mcbdddda[m controllerFixes
+[33m4f09921[m desarchiver+supprimer de la liste des archives +attribut is_archived
+[33m77adae3[m crud+javafx+testUnitaire2
+[33m79e38d0[m crud+javafx+testUnitaire
+[33m40575cd[m testUnitaire+FXML+Controllers
+[33mc14018b[m testUnitaire+FXML+Controllers
+[33mc911349[m Ajout du projet PiDev
+[33m0fd9e29[m[33m ([m[1;31morigin/taha[m[33m, [m[1;31morigin/ryhab[m[33m, [m[1;31morigin/rahma[m[33m, [m[1;31morigin/eya[m[33m, [m[1;32mmaster[m[33m)[m init commit

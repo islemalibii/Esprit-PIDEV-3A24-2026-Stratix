@@ -4,13 +4,17 @@
 <?import javafx.scene.layout.*?>
 
 
-<StackPane prefHeight="700.0" prefWidth="1000.0" styleClass="main-bg"
+<?import javafx.scene.web.WebView?>
+<StackPane prefHeight="700.0" prefWidth="1000.0"
+           styleClass="main-bg"
+           alignment="CENTER"
            stylesheets="@/style/global.css"
            xmlns="http://javafx.com/javafx/20"
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="controllers.AddEventController">
 
-    <VBox alignment="CENTER" spacing="25" maxWidth="500.0">
+    <ScrollPane fitToWidth="true" style="-fx-background: transparent;">
+    <VBox alignment="TOP_CENTER" spacing="25" maxWidth="800.0" style="-fx-padding: 30;">
 
         <VBox spacing="5" alignment="CENTER_LEFT">
             <Label text="Créer un nouvel événement" styleClass="heading-large" />
@@ -58,14 +62,15 @@
                 <Label text="Statut Initial" styleClass="input-label" />
                 <ComboBox fx:id="statusCombo" maxWidth="Infinity" promptText="Choisir le statut" />
             </VBox>
-
             <VBox spacing="10">
-                <Label text="Ressources pour l'événement" styleClass="input-label"/>
-
-                <ScrollPane prefHeight="200" fitToWidth="true">
-                    <VBox fx:id="ressourcesContainer" spacing="8"/>
-                </ScrollPane>
+                <Label text="Choisir sur la carte" styleClass="input-label" />
+                <HBox spacing="5">
+                    <TextField fx:id="mapSearchField" promptText="Rechercher..." HBox.hgrow="ALWAYS" />
+                    <Button text="Rechercher" onAction="#handleMapSearch" />
+                </HBox>
+                <WebView fx:id="mapPicker" minHeight="400.0" prefHeight="400.0" prefWidth="600.0" />
             </VBox>
+
 
             <Separator style="-fx-padding: 10 0;" />
 
@@ -75,4 +80,5 @@
             </HBox>
         </VBox>
     </VBox>
+    </ScrollPane>
 </StackPane>

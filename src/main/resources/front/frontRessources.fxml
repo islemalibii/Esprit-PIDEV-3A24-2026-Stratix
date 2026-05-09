@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.controllers.front.FrontRessourceController"
+            prefHeight="700" prefWidth="1000"
+            style="-fx-background-color: #f5f5f5;">
+
+    <!-- En-tête -->
+    <top>
+        <VBox spacing="10" style="-fx-background-color: linear-gradient(to right, #764ba2, #667eea); -fx-padding: 20;">
+            <Label text=" INVENTAIRE DES RESSOURCES"
+                   style="-fx-text-fill: white; -fx-font-size: 24; -fx-font-weight: bold; -fx-alignment: center;"/>
+            <Label text="Consultez toutes les ressources disponibles"
+                   style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 14; -fx-alignment: center;"/>
+        </VBox>
+    </top>
+
+    <!-- Centre -->
+    <center>
+        <VBox spacing="15" style="-fx-padding: 20;">
+
+            <!-- Barre de recherche -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="🔍 Rechercher:" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                <TextField fx:id="searchField" promptText="Nom, type ou fournisseur..."
+                           HBox.hgrow="ALWAYS" prefWidth="350"
+                           style="-fx-background-radius: 5; -fx-padding: 8;"/>
+                <Button fx:id="btnSearch" text="Rechercher"
+                        style="-fx-background-color: #764ba2; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 5; -fx-padding: 8 15;"/>
+                <Button fx:id="btnClearSearch" text="Effacer"
+                        style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 5; -fx-padding: 8 15;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- Bouton pour voir les produits -->
+                <Button text=" Voir les produits"
+                        style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 5; -fx-padding: 8 15;"
+                        onAction="#voirProduits"/>
+            </HBox>
+
+            <!-- Liste des ressources -->
+            <ListView fx:id="listViewRessources" VBox.vgrow="ALWAYS"
+                      style="-fx-background-radius: 10; -fx-background-color: transparent;"/>
+
+        </VBox>
+    </center>
+
+    <!-- Bas de page -->
+    <bottom>
+        <HBox spacing="20" style="-fx-background-color: #ecf0f1; -fx-padding: 15;" alignment="CENTER">
+            <Label fx:id="statsTotal" text="Total ressources: 0"
+                   style="-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 14;"/>
+            <Label fx:id="statsQuantiteTotale" text="Quantité totale: 0"
+                   style="-fx-font-weight: bold; -fx-text-fill: #27ae60; -fx-font-size: 14;"/>
+            <Label text="Mode Consultation Uniquement"
+                   style="-fx-font-style: italic; -fx-text-fill: #7f8c8d;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

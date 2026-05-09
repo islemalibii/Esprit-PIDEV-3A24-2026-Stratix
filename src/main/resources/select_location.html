@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        html, body, #map {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+    var map = L.map('map').setView([36.8663, 10.1647], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker = L.marker([36.8663, 10.1647], {draggable: true}).addTo(map);
+
+    function updateJava(latlng) {
+        console.log("Attempting to send to Java: " + latlng.lat + ", " + latlng.lng);
+
+        if (window.javaConnector && typeof window.javaConnector.setCoordinates === 'function') {
+            window.javaConnector.setCoordinates(latlng.lat, latlng.lng);
+        } else {
+            console.error("The Java Bridge (javaConnector) is not initialized!");
+        }
+    }
+
+    marker.on('dragend', function(e) { updateJava(e.target.getLatLng()); });
+
+    map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        updateJava(e.latlng);
+    });
+
+    function searchAddress(address) {
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(address))
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    var lat = parseFloat(data[0].lat);
+                    var lon = parseFloat(data[0].lon);
+                    var latlng = L.latLng(lat, lon);
+
+                    map.setView(latlng, 16);
+                    marker.setLatLng(latlng);
+                    updateJava(latlng);
+                }
+            })
+            .catch(err => console.error("Search error:", err));
+    }
+
+    window.onload = function() {
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 500);
+    };
+</script>
+</body>
+</html>
