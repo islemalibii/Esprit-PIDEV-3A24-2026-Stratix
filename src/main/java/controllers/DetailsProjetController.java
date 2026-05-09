@@ -33,12 +33,23 @@ public class DetailsProjetController {
     @FXML private Label labelResponsable;
     @FXML private Label labelEquipe;
     @FXML private VBox containerPhases;
+    @FXML private Button btnAjouterPhase; // référence au bouton pour le cacher en readOnly
 
     private final PhaseService phaseService = new PhaseService();
     private Projet projetCourant;
+    private boolean readOnly = false;
     private final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-    // ── Init ──────────────────────────────────────────────────────────────────
+    // ── Mode lecture seule (employé) ─────────────────────────────────────────
+
+    /**
+     * Appeler AVANT setProjet() si l'employé ne doit pas pouvoir modifier les phases.
+     */
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
+    // ── Init projet ───────────────────────────────────────────────────────────
 
     public void setProjet(Projet p) {
         if (p == null) return;
@@ -56,6 +67,12 @@ public class DetailsProjetController {
 
         if (labelResponsable != null) labelResponsable.setText(p.getChefProjet());
         if (labelEquipe != null) labelEquipe.setText(p.getEquipe());
+
+        // Cacher le bouton "Ajouter une phase" pour les employés
+        if (btnAjouterPhase != null) {
+            btnAjouterPhase.setVisible(!readOnly);
+            btnAjouterPhase.setManaged(!readOnly);
+        }
 
         chargerPhases();
     }
@@ -111,7 +128,7 @@ public class DetailsProjetController {
                 sdf.format(phase.getDateDebut()) + "  →  " + sdf.format(phase.getDateFin()));
         labelDates.setStyle("-fx-font-size: 12; -fx-text-fill: #64748b;");
 
-        // Vélocités (si renseignées)
+        // Vélocités
         VBox velocites = new VBox(2);
         velocites.setAlignment(Pos.CENTER_RIGHT);
         velocites.setMinWidth(100);
@@ -126,24 +143,29 @@ public class DetailsProjetController {
             velocites.getChildren().add(vr);
         }
 
-        // Bouton modifier
-        Button btnEdit = new Button("✏");
-        btnEdit.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; " +
-                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13; -fx-padding: 5 10;");
-        btnEdit.setOnAction(e -> ouvrirModalPhase(phase));
+        ligne.getChildren().addAll(badge, infos, labelDates, velocites);
 
-        // Bouton supprimer
-        Button btnDelete = new Button("🗑");
-        btnDelete.setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #ef4444; " +
-                "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13; -fx-padding: 5 10;");
-        btnDelete.setOnAction(e -> supprimerPhase(phase));
+        // Boutons modifier/supprimer : uniquement pour le responsable projet
+        if (!readOnly) {
+            Button btnEdit = new Button("✏");
+            btnEdit.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; " +
+                    "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13; -fx-padding: 5 10;");
+            btnEdit.setOnAction(e -> ouvrirModalPhase(phase));
 
-        ligne.getChildren().addAll(badge, infos, labelDates, velocites, btnEdit, btnDelete);
+            Button btnDelete = new Button("🗑");
+            btnDelete.setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #ef4444; " +
+                    "-fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13; -fx-padding: 5 10;");
+            btnDelete.setOnAction(e -> supprimerPhase(phase));
+
+            ligne.getChildren().addAll(btnEdit, btnDelete);
+        }
+
         return ligne;
     }
 
     @FXML
     private void ajouterPhase() {
+        if (readOnly) return;
         ouvrirModalPhase(null);
     }
 
@@ -217,7 +239,7 @@ public class DetailsProjetController {
             case "terminé"  -> "#10b981";
             case "en cours" -> "#f59e0b";
             case "annulé"   -> "#ef4444";
-            default         -> "#6366f1"; // Planifié
+            default         -> "#6366f1";
         };
         return "-fx-background-color: " + color +
                 "; -fx-text-fill: white; -fx-padding: 4 10; " +

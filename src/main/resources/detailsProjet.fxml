@@ -68,7 +68,7 @@
                             <Label text="🏃 Phases du projet"
                                    style="-fx-font-size: 17; -fx-font-weight: bold; -fx-text-fill: #1e293b;"
                                    HBox.hgrow="ALWAYS"/>
-                            <Button text="+ Ajouter une phase" onAction="#ajouterPhase"
+                            <Button fx:id="btnAjouterPhase" text="+ Ajouter une phase" onAction="#ajouterPhase"
                                     style="-fx-background-color: #22c55e; -fx-text-fill: white;
                                            -fx-background-radius: 8; -fx-padding: 8 18;
                                            -fx-font-weight: bold; -fx-cursor: hand;"/>

@@ -56,13 +56,14 @@ public class ListeProjetsController {
         }
 
         if (comboFiltre != null) {
-            comboFiltre.setItems(FXCollections.observableArrayList("Tous les projets", "Planifié", "En cours", "Terminé", "Annulé"));
+            comboFiltre.setItems(FXCollections.observableArrayList(
+                    "Tous les projets", "Planifié", "En cours", "Terminé", "Annulé"));
             comboFiltre.setValue("Tous les projets");
             comboFiltre.setOnAction(e -> filtrerEtAfficher());
         }
 
         if (searchField != null) {
-            searchField.textProperty().addListener((obs, oldVal, newVal) -> filtrerEtAfficher());
+            searchField.textProperty().addListener((obs, o, n) -> filtrerEtAfficher());
         }
 
         rafraichirDonnees();
@@ -75,75 +76,99 @@ public class ListeProjetsController {
     }
 
     private void updateStatistics(List<Projet> projets) {
-        if (lblTotal != null) lblTotal.setText(String.valueOf(projets.size()));
+        if (lblTotal   != null) lblTotal.setText(String.valueOf(projets.size()));
         if (lblEnCours != null) lblEnCours.setText(String.valueOf(projets.stream().filter(p -> "En cours".equals(p.getStatut())).count()));
         if (lblTermine != null) lblTermine.setText(String.valueOf(projets.stream().filter(p -> "Terminé".equals(p.getStatut())).count()));
-        if (lblAnnule != null) lblAnnule.setText(String.valueOf(projets.stream().filter(p -> "Annulé".equals(p.getStatut())).count()));
+        if (lblAnnule  != null) lblAnnule.setText(String.valueOf(projets.stream().filter(p -> "Annulé".equals(p.getStatut())).count()));
     }
 
     private void filtrerEtAfficher() {
         if (containerProjets == null) return;
         containerProjets.getChildren().clear();
-        String statut = (comboFiltre != null) ? comboFiltre.getValue() : "Tous les projets";
-        String recherche = (searchField != null) ? searchField.getText() : "";
+        String statut   = (comboFiltre   != null) ? comboFiltre.getValue()   : "Tous les projets";
+        String recherche = (searchField  != null) ? searchField.getText()    : "";
         List<Projet> filtree = projetService.rechercherProjets(recherche, statut);
         for (Projet p : filtree) {
             containerProjets.getChildren().add(creerCardProjet(p));
         }
     }
 
+    // ── Carte projet ──────────────────────────────────────────────────────────
+
     private VBox creerCardProjet(Projet p) {
         VBox card = new VBox(15);
         card.getStyleClass().add("project-card");
         card.setPrefWidth(350);
 
+        // Badge statut
         Label statutBadge = new Label(p.getStatut().toUpperCase());
-        statutBadge.getStyleClass().add("statut-badge");
-        String statusClass = switch (p.getStatut().toLowerCase()) {
-            case "terminé"  -> "badge-termine";
-            case "en cours" -> "badge-en-cours";
-            case "annulé"   -> "badge-annule";
-            default         -> "badge-planifie";
-        };
-        statutBadge.getStyleClass().add(statusClass);
+        statutBadge.getStyleClass().addAll("statut-badge", getStatutClass(p.getStatut()));
 
+        // Nom
         Label nom = new Label(p.getNom());
         nom.getStyleClass().add("project-title");
 
+        // Description
         Label desc = new Label(p.getDescription());
         desc.getStyleClass().add("project-desc");
         desc.setWrapText(true);
         desc.setMaxHeight(50);
 
-        VBox progBox = new VBox(8);
+        // Progression
         HBox labelBox = new HBox();
         Label lblProgText = new Label("Progression");
         lblProgText.getStyleClass().add("summary-label");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label lblPercentage = new Label(p.getProgression() + "%");
-        lblPercentage.getStyleClass().add("summary-value");
-        lblPercentage.setStyle("-fx-font-size: 14px;");
-        labelBox.getChildren().addAll(lblProgText, spacer, lblPercentage);
+        Label lblPct = new Label(p.getProgression() + "%");
+        lblPct.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+        labelBox.getChildren().addAll(lblProgText, spacer, lblPct);
+
         ProgressBar pb = new ProgressBar(p.getProgression() / 100.0);
         pb.getStyleClass().add("progress-bar");
         pb.setPrefWidth(Double.MAX_VALUE);
-        progBox.getChildren().addAll(labelBox, pb);
 
-        HBox actions = new HBox(10);
-        actions.setAlignment(Pos.CENTER_RIGHT);
-        Button btnView = new Button("Voir Détails");
-        btnView.getStyleClass().add("btn-secondary");
+        VBox progBox = new VBox(8, labelBox, pb);
+
+        // ── Ligne 1 d'actions : Voir Détails ──
+        Button btnView = new Button("🔍 Voir Détails");
+        btnView.setStyle("-fx-background-color: #1e293b; -fx-text-fill: white; " +
+                "-fx-background-radius: 8; -fx-cursor: hand; -fx-font-weight: bold; -fx-padding: 8 14;");
+        btnView.setMaxWidth(Double.MAX_VALUE);
         btnView.setOnAction(e -> voirDetails(p));
-        actions.getChildren().add(btnView);
 
-        card.getChildren().addAll(statutBadge, nom, desc, new Separator(), progBox, actions);
+        // ── Ligne 2 d'actions : Modifier | PDF | Archiver ──
+        Button btnModifier = new Button("✏ Modifier");
+        btnModifier.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; " +
+                "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 7 12;");
+        btnModifier.setOnAction(e -> ouvrirFenetreModification(p));
+
+        Button btnPdf = new Button("📄 PDF");
+        btnPdf.setStyle("-fx-background-color: #f0fdf4; -fx-text-fill: #16a34a; " +
+                "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 7 12;");
+        btnPdf.setOnAction(e -> exporterEnPDF(p));
+
+        Button btnArchiver = new Button("📁 Archiver");
+        btnArchiver.setStyle("-fx-background-color: #fff7ed; -fx-text-fill: #ea580c; " +
+                "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 7 12;");
+        btnArchiver.setOnAction(e -> handleArchiver(p));
+
+        HBox actionsSecondaires = new HBox(8, btnModifier, btnPdf, btnArchiver);
+        actionsSecondaires.setAlignment(Pos.CENTER);
+
+        card.getChildren().addAll(
+                statutBadge, nom, desc,
+                new Separator(),
+                progBox,
+                btnView,
+                actionsSecondaires
+        );
+
         return card;
     }
 
-    /**
-     * Charge la vue détails dans le contentArea du MainController (sidebar reste visible)
-     */
+    // ── Navigation détails ────────────────────────────────────────────────────
+
     public void voirDetails(Projet p) {
         if (MainController.staticContentArea == null) return;
         try {
@@ -158,33 +183,45 @@ public class ListeProjetsController {
         }
     }
 
+    // ── PDF ───────────────────────────────────────────────────────────────────
+
     private void exporterEnPDF(Projet p) {
         Document document = new Document();
         try {
             String fileName = "Rapport_" + p.getNom().replace(" ", "_") + ".pdf";
             PdfWriter.getInstance(document, new FileOutputStream(fileName));
             document.open();
+
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, Color.BLUE);
-            Paragraph titre = new Paragraph("STRATIX - RAPPORT PROJET", titleFont);
+            com.lowagie.text.Paragraph titre = new com.lowagie.text.Paragraph("STRATIX - RAPPORT PROJET", titleFont);
             titre.setAlignment(Element.ALIGN_CENTER);
             document.add(titre);
-            document.add(new Paragraph("\nNom: " + p.getNom() + "\nStatut: " + p.getStatut() + "\nBudget: " + p.getBudget() + " DT\nDescription: " + p.getDescription()));
+            document.add(new com.lowagie.text.Paragraph(
+                    "\nNom: " + p.getNom() +
+                            "\nStatut: " + p.getStatut() +
+                            "\nBudget: " + p.getBudget() + " DT" +
+                            "\nDescription: " + p.getDescription() +
+                            "\nProgression: " + p.getProgression() + "%" +
+                            "\nResponsable: " + p.getChefProjet()
+            ));
+
             String qrData = "Projet: " + p.getNom() + " | Statut: " + p.getStatut();
-            String qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + URLEncoder.encode(qrData, StandardCharsets.UTF_8);
-            com.lowagie.text.Image qrImage = com.lowagie.text.Image.getInstance(new java.net.URL(qrCodeUrl));
+            String qrUrl  = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data="
+                    + URLEncoder.encode(qrData, StandardCharsets.UTF_8);
+            com.lowagie.text.Image qrImage = com.lowagie.text.Image.getInstance(new java.net.URL(qrUrl));
             qrImage.setAlignment(Element.ALIGN_CENTER);
             document.add(qrImage);
+
             document.close();
             Desktop.getDesktop().open(new File(fileName));
-        } catch (Exception e) { e.printStackTrace(); }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR, "Erreur lors de la génération du PDF.").showAndWait();
+        }
     }
 
-    private void handleArchiver(Projet p) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Archiver '" + p.getNom() + "' ?", ButtonType.YES, ButtonType.NO);
-        confirm.showAndWait().ifPresent(res -> {
-            if (res == ButtonType.YES) { projetService.archiverUnProjet(p.getId()); rafraichirDonnees(); }
-        });
-    }
+    // ── Modification ──────────────────────────────────────────────────────────
 
     private void ouvrirFenetreModification(Projet p) {
         try {
@@ -193,10 +230,59 @@ public class ListeProjetsController {
             ModifierProjetController ctrl = loader.getController();
             ctrl.chargerDonnees(p.getId());
             Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Modifier le projet");
             stage.setScene(new Scene(root));
             stage.showAndWait();
             rafraichirDonnees();
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ── Archivage ─────────────────────────────────────────────────────────────
+
+    private void handleArchiver(Projet p) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Archiver le projet \"" + p.getNom() + "\" ?",
+                ButtonType.YES, ButtonType.NO);
+        confirm.setHeaderText(null);
+        confirm.showAndWait().ifPresent(res -> {
+            if (res == ButtonType.YES) {
+                projetService.archiverUnProjet(p.getId());
+                rafraichirDonnees();
+            }
+        });
+    }
+
+    // ── Autres actions ────────────────────────────────────────────────────────
+
+    @FXML private void voirArchives()        { chargerFenetre("/ListeArchives.fxml",   "Archives"); }
+    @FXML private void allerAjouterProjet()  { chargerFenetre("/AjouterProjet.fxml",   "Nouveau Projet"); }
+
+    private void chargerFenetre(String fxmlPath, String titre) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle(titre);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+            rafraichirDonnees();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ── Utils ─────────────────────────────────────────────────────────────────
+
+    private String getStatutClass(String statut) {
+        return switch (statut != null ? statut.toLowerCase() : "") {
+            case "terminé"  -> "badge-termine";
+            case "en cours" -> "badge-en-cours";
+            case "annulé"   -> "badge-annule";
+            default         -> "badge-planifie";
+        };
     }
 
     private void ouvrirChatSpecifique(Projet p) {
@@ -208,20 +294,8 @@ public class ListeProjetsController {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (IOException e) { e.printStackTrace(); }
-    }
-
-    @FXML private void voirArchives() { chargerFenetre("/ListeArchives.fxml", "Archives"); }
-    @FXML private void allerAjouterProjet() { chargerFenetre("/AjouterProjet.fxml", "Nouveau Projet"); }
-
-    private void chargerFenetre(String fxmlPath, String titre) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(new Scene(root));
-            stage.showAndWait();
-            rafraichirDonnees();
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
