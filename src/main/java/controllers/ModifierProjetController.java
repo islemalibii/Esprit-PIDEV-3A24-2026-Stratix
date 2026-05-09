@@ -157,6 +157,8 @@ public class ModifierProjetController {
         return true;
     }
 
+
+
     private void afficherAlerte(Alert.AlertType type, String titre, String message) {
         Alert alert = new Alert(type);
         alert.setTitle(titre);
