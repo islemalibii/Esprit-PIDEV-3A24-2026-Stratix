@@ -16,7 +16,6 @@ import models.Projet;
 import services.ProjetService;
 
 import com.lowagie.text.Document;
-import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -85,8 +84,8 @@ public class ListeProjetsController {
     private void filtrerEtAfficher() {
         if (containerProjets == null) return;
         containerProjets.getChildren().clear();
-        String statut   = (comboFiltre   != null) ? comboFiltre.getValue()   : "Tous les projets";
-        String recherche = (searchField  != null) ? searchField.getText()    : "";
+        String statut    = (comboFiltre  != null) ? comboFiltre.getValue() : "Tous les projets";
+        String recherche = (searchField  != null) ? searchField.getText()  : "";
         List<Projet> filtree = projetService.rechercherProjets(recherche, statut);
         for (Projet p : filtree) {
             containerProjets.getChildren().add(creerCardProjet(p));
@@ -130,14 +129,21 @@ public class ListeProjetsController {
 
         VBox progBox = new VBox(8, labelBox, pb);
 
-        // ── Ligne 1 d'actions : Voir Détails ──
+        // ── Bouton Voir Détails (pleine largeur) ──
         Button btnView = new Button("🔍 Voir Détails");
         btnView.setStyle("-fx-background-color: #1e293b; -fx-text-fill: white; " +
                 "-fx-background-radius: 8; -fx-cursor: hand; -fx-font-weight: bold; -fx-padding: 8 14;");
         btnView.setMaxWidth(Double.MAX_VALUE);
         btnView.setOnAction(e -> voirDetails(p));
 
-        // ── Ligne 2 d'actions : Modifier | PDF | Archiver ──
+        // ── Bouton Chat (pleine largeur) ──
+        Button btnChat = new Button("💬 Chat Projet");
+        btnChat.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; " +
+                "-fx-background-radius: 8; -fx-cursor: hand; -fx-font-weight: bold; -fx-padding: 8 14;");
+        btnChat.setMaxWidth(Double.MAX_VALUE);
+        btnChat.setOnAction(e -> ouvrirChatSpecifique(p));
+
+        // ── Ligne 3 : Modifier | PDF | Archiver ──
         Button btnModifier = new Button("✏ Modifier");
         btnModifier.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0284c7; " +
                 "-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 7 12;");
@@ -161,6 +167,7 @@ public class ListeProjetsController {
                 new Separator(),
                 progBox,
                 btnView,
+                btnChat,          // ← ajouté ici
                 actionsSecondaires
         );
 
@@ -179,6 +186,23 @@ public class ListeProjetsController {
             MainController.staticContentArea.getChildren().setAll(root);
         } catch (IOException e) {
             System.err.println("❌ Erreur chargement détails: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // ── Chat ──────────────────────────────────────────────────────────────────
+
+    private void ouvrirChatSpecifique(Projet p) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChatProjet.fxml"));
+            Parent root = loader.load();
+            ChatProjetController chatCtrl = loader.getController();
+            chatCtrl.initChat(p.getId(), p.getNom());
+            Stage stage = new Stage();
+            stage.setTitle("Chat - " + p.getNom());
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -255,10 +279,10 @@ public class ListeProjetsController {
         });
     }
 
-    // ── Autres actions ────────────────────────────────────────────────────────
+    // ── Navigation ────────────────────────────────────────────────────────────
 
-    @FXML private void voirArchives()        { chargerFenetre("/ListeArchives.fxml",   "Archives"); }
-    @FXML private void allerAjouterProjet()  { chargerFenetre("/AjouterProjet.fxml",   "Nouveau Projet"); }
+    @FXML private void voirArchives()       { chargerFenetre("/ListeArchives.fxml",  "Archives"); }
+    @FXML private void allerAjouterProjet() { chargerFenetre("/AjouterProjet.fxml",  "Nouveau Projet"); }
 
     private void chargerFenetre(String fxmlPath, String titre) {
         try {
@@ -283,19 +307,5 @@ public class ListeProjetsController {
             case "annulé"   -> "badge-annule";
             default         -> "badge-planifie";
         };
-    }
-
-    private void ouvrirChatSpecifique(Projet p) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChatProjet.fxml"));
-            Parent root = loader.load();
-            ChatProjetController chatCtrl = loader.getController();
-            chatCtrl.initChat(p.getId(), p.getNom());
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
