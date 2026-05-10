@@ -13,8 +13,11 @@ import models.Projet;
 import models.Utilisateur;
 import models.UserRole;
 import services.ProjetService;
+import utils.MyDataBase;
 
 import java.io.IOException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,13 +40,53 @@ public class EmployeListeProjetController {
     }
 
     public void rafraichirListe(Utilisateur user) {
-        String nomComplet = (user.getNom() + " " + user.getPrenom()).toLowerCase().trim();
-        List<Projet> mesProjets = projetService.listerTousLesProjets().stream()
-                .filter(p -> p.getEquipeMembres() != null
-                        && p.getEquipeMembres().toLowerCase().contains(nomComplet))
-                .filter(p -> !p.isArchived())
-                .collect(Collectors.toList());
+        List<Projet> mesProjets = findProjetsForUser(user);
         afficherLesCartes(mesProjets);
+    }
+
+    /**
+     * Cherche les projets de l'employé dans DEUX sources :
+     * 1. projet_utilisateur (projets créés depuis Symfony)
+     * 2. equipe_membres texte (projets créés depuis Java)
+     */
+    private List<Projet> findProjetsForUser(Utilisateur user) {
+        List<Projet> tous = projetService.listerTousLesProjets();
+        List<Integer> idsViaJointure = getProjetIdsViaJointure(user.getId());
+        String nomComplet = (user.getNom() + " " + user.getPrenom()).toLowerCase().trim();
+        String prenomNom  = (user.getPrenom() + " " + user.getNom()).toLowerCase().trim();
+
+        return tous.stream()
+                .filter(p -> !p.isArchived())
+                .filter(p ->
+                        // Source 1 : table projet_utilisateur (Symfony)
+                        idsViaJointure.contains(p.getId())
+                                ||
+                                // Source 2 : colonne equipe_membres texte (Java)
+                                (p.getEquipeMembres() != null && (
+                                        p.getEquipeMembres().toLowerCase().contains(nomComplet) ||
+                                                p.getEquipeMembres().toLowerCase().contains(prenomNom)
+                                ))
+                )
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Récupère les IDs des projets où l'utilisateur est dans projet_utilisateur
+     */
+    private List<Integer> getProjetIdsViaJointure(int userId) {
+        List<Integer> ids = new ArrayList<>();
+        String sql = "SELECT projet_id FROM projet_utilisateur WHERE utilisateur_id = ?";
+        try (PreparedStatement ps = MyDataBase.getInstance().getCnx().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ids.add(rs.getInt("projet_id"));
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur projet_utilisateur: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return ids;
     }
 
     private void afficherLesCartes(List<Projet> projets) {
@@ -82,7 +125,6 @@ public class EmployeListeProjetController {
         HBox actions = new HBox(10);
         actions.setAlignment(Pos.CENTER);
 
-        // ── Bouton Détails → charge DetailsProjet dans le contentArea ──
         Button btnDetails = new Button("Voir Détails");
         btnDetails.setStyle("-fx-background-color: #1e293b; -fx-text-fill: white; " +
                 "-fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 8 16;");
@@ -98,20 +140,14 @@ public class EmployeListeProjetController {
         return card;
     }
 
-    /**
-     * Charge DetailsProjet.fxml dans le contentArea du MainController.
-     * La sidebar reste visible, et l'employé voit les phases (lecture seule).
-     */
     private void voirDetails(Projet p) {
         if (MainController.staticContentArea == null) return;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/detailsProjet.fxml"));
             Parent root = loader.load();
-
             DetailsProjetController ctrl = loader.getController();
-            ctrl.setReadOnly(true); // ← AVANT setProjet pour que le bouton soit caché dès le chargement
+            ctrl.setReadOnly(true);
             ctrl.setProjet(p);
-
             MainController.staticContentArea.getChildren().setAll(root);
         } catch (IOException e) {
             System.err.println("❌ Erreur chargement détails projet: " + e.getMessage());
@@ -123,10 +159,7 @@ public class EmployeListeProjetController {
     private void ouvrirChat() {
         Utilisateur user = UserRole.getInstance().getUser();
         if (user == null) return;
-        String nom = (user.getNom() + " " + user.getPrenom()).toLowerCase().trim();
-        projetService.listerTousLesProjets().stream()
-                .filter(p -> p.getEquipeMembres() != null
-                        && p.getEquipeMembres().toLowerCase().contains(nom))
+        findProjetsForUser(user).stream()
                 .findFirst()
                 .ifPresentOrElse(this::ouvrirChatSpecifique, () ->
                         new Alert(Alert.AlertType.INFORMATION,
@@ -154,11 +187,8 @@ public class EmployeListeProjetController {
     private void rechercherProjet() {
         Utilisateur currentUser = UserRole.getInstance().getUser();
         if (currentUser == null) return;
-        String nomComplet = (currentUser.getNom() + " " + currentUser.getPrenom()).toLowerCase().trim();
         String search = searchField.getText().toLowerCase().trim();
-        List<Projet> filtrés = projetService.listerTousLesProjets().stream()
-                .filter(p -> p.getEquipeMembres() != null
-                        && p.getEquipeMembres().toLowerCase().contains(nomComplet))
+        List<Projet> filtrés = findProjetsForUser(currentUser).stream()
                 .filter(p -> p.getNom().toLowerCase().contains(search))
                 .collect(Collectors.toList());
         afficherLesCartes(filtrés);
