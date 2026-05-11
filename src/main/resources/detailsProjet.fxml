@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="25" stylesheets="@/style.css"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.DetailsProjetController">
+
+    <padding><Insets top="30" right="40" bottom="30" left="40"/></padding>
+
+    <!-- ── Header ─────────────────────────────────────────────────── -->
+    <HBox alignment="CENTER_LEFT">
+        <VBox HBox.hgrow="ALWAYS" spacing="4">
+            <Label fx:id="labelNomTitre"
+                   style="-fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #1e293b;"
+                   text="Nom du Projet"/>
+            <Label text="Consultation des détails du projet" styleClass="project-desc"/>
+        </VBox>
+        <Button onAction="#retourListe" styleClass="btn-secondary" text="← Retour à la liste"/>
+    </HBox>
+
+    <!-- ── Corps ──────────────────────────────────────────────────── -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                style="-fx-background-color: transparent; -fx-background: transparent;">
+        <content>
+            <HBox spacing="25" alignment="TOP_LEFT">
+                <padding><Insets top="5" bottom="20"/></padding>
+
+                <!-- ══ COLONNE GAUCHE ══════════════════════════════ -->
+                <VBox spacing="20" HBox.hgrow="ALWAYS">
+
+                    <!-- Fiche descriptive -->
+                    <VBox styleClass="summary-card" style="-fx-padding: 30;" spacing="15">
+                        <Label text="ℹ Fiche descriptive"
+                               style="-fx-font-size: 17; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+                        <Separator/>
+                        <GridPane hgap="20" vgap="18">
+                            <columnConstraints>
+                                <ColumnConstraints prefWidth="170" minWidth="150"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+                            <Label text="NOM DU PROJET" styleClass="summary-label" GridPane.rowIndex="0"/>
+                            <Label fx:id="labelNom"
+                                   style="-fx-font-weight: bold; -fx-font-size: 14; -fx-text-fill: #1e293b;"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                            <Label text="DESCRIPTION" styleClass="summary-label" GridPane.rowIndex="1"/>
+                            <Label fx:id="labelDescription" styleClass="project-desc" wrapText="true"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                            <Label text="BUDGET ESTIMÉ" styleClass="summary-label" GridPane.rowIndex="2"/>
+                            <Label fx:id="labelBudget"
+                                   style="-fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 16;"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                            <Label text="CAHIER DES CHARGES" styleClass="summary-label" GridPane.rowIndex="3"/>
+                            <Label text="Aucun fichier joint."
+                                   style="-fx-font-style: italic; -fx-text-fill: #94a3b8;"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                        </GridPane>
+                    </VBox>
+
+                    <!-- Phases du projet -->
+                    <VBox styleClass="summary-card" style="-fx-padding: 25;" spacing="15">
+                        <HBox alignment="CENTER_LEFT">
+                            <Label text="🏃 Phases du projet"
+                                   style="-fx-font-size: 17; -fx-font-weight: bold; -fx-text-fill: #1e293b;"
+                                   HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="btnAjouterPhase" text="+ Ajouter une phase" onAction="#ajouterPhase"
+                                    style="-fx-background-color: #22c55e; -fx-text-fill: white;
+                                           -fx-background-radius: 8; -fx-padding: 8 18;
+                                           -fx-font-weight: bold; -fx-cursor: hand;"/>
+                        </HBox>
+                        <Separator/>
+                        <!-- Rempli dynamiquement -->
+                        <VBox fx:id="containerPhases" spacing="10"/>
+                    </VBox>
+
+                    <!-- Équipe -->
+                    <VBox styleClass="summary-card" style="-fx-padding: 25;" spacing="15">
+                        <Label text="👥 Équipe"
+                               style="-fx-font-size: 17; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+                        <Separator/>
+                        <Label fx:id="labelEquipe"
+                               style="-fx-font-style: italic; -fx-text-fill: #64748b; -fx-font-size: 13;"
+                               wrapText="true"/>
+                    </VBox>
+
+                </VBox>
+
+                <!-- ══ COLONNE DROITE ══════════════════════════════ -->
+                <VBox spacing="20" minWidth="270" maxWidth="290">
+
+                    <!-- Statut global -->
+                    <VBox styleClass="summary-card" style="-fx-padding: 20;" spacing="12" alignment="CENTER">
+                        <Label text="STATUT GLOBAL" styleClass="summary-label"/>
+                        <Label fx:id="labelStatut" text="PLANIFIÉ"
+                               style="-fx-background-color: #00bcd4; -fx-text-fill: white;
+                                      -fx-padding: 10 20; -fx-background-radius: 20;
+                                      -fx-font-weight: bold; -fx-font-size: 14;"/>
+                    </VBox>
+
+                    <!-- Responsable -->
+                    <VBox styleClass="summary-card" style="-fx-padding: 20;" spacing="10" alignment="CENTER">
+                        <Label text="👤 Responsable"
+                               style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+                        <Separator/>
+                        <Label fx:id="labelResponsable"
+                               style="-fx-font-weight: bold; -fx-font-size: 14; -fx-text-fill: #1e293b;"
+                               wrapText="true" alignment="CENTER"/>
+                        <Label text="CHEF DE PROJET" styleClass="summary-label"/>
+                    </VBox>
+
+                    <!-- Planning -->
+                    <VBox styleClass="summary-card" style="-fx-padding: 20;" spacing="15">
+                        <Label text="📅 Planning"
+                               style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+                        <Separator/>
+
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <Label text="📌"
+                                   style="-fx-font-size: 16; -fx-background-color: #fee2e2;
+                                          -fx-background-radius: 8; -fx-padding: 8;"/>
+                            <VBox spacing="3">
+                                <Label text="DATE DE DÉBUT" styleClass="summary-label"/>
+                                <Label fx:id="labelDateDebut"
+                                       style="-fx-font-weight: bold; -fx-font-size: 14; -fx-text-fill: #1e293b;"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <Label text="🏁"
+                                   style="-fx-font-size: 16; -fx-background-color: #fee2e2;
+                                          -fx-background-radius: 8; -fx-padding: 8;"/>
+                            <VBox spacing="3">
+                                <Label text="DATE DE FIN" styleClass="summary-label"/>
+                                <Label fx:id="labelDateFin"
+                                       style="-fx-font-weight: bold; -fx-font-size: 14; -fx-text-fill: #1e293b;"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                </VBox>
+            </HBox>
+        </content>
+    </ScrollPane>
+
+</VBox>

@@ -10,6 +10,7 @@ import utils.MyDataBase;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class AjoutProjetController {
@@ -23,15 +24,14 @@ public class AjoutProjetController {
 
     private ProjetService projetService = new ProjetService();
 
-    private static class UserWrapper {
+    static class UserWrapper {
         int id;
         String nomComplet;
         UserWrapper(int id, String nomComplet) {
             this.id = id;
             this.nomComplet = nomComplet;
         }
-        @Override
-        public String toString() { return nomComplet; }
+        @Override public String toString() { return nomComplet; }
     }
 
     @FXML
@@ -43,10 +43,8 @@ public class AjoutProjetController {
         lvMembres.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         cbResponsable.setConverter(new StringConverter<UserWrapper>() {
-            @Override
-            public String toString(UserWrapper user) { return (user == null) ? "" : user.nomComplet; }
-            @Override
-            public UserWrapper fromString(String string) { return null; }
+            @Override public String toString(UserWrapper u) { return u == null ? "" : u.nomComplet; }
+            @Override public UserWrapper fromString(String s) { return null; }
         });
 
         bloquerDatesPassees(dpDateDebut);
@@ -55,22 +53,16 @@ public class AjoutProjetController {
     }
 
     private void chargerUtilisateurs() {
-        String sql = "SELECT id, nom, prenom FROM utilisateur";
         Connection conn = MyDataBase.getInstance().getCnx();
         try (Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-
+             ResultSet rs = st.executeQuery("SELECT id, nom, prenom FROM utilisateur")) {
             while (rs.next()) {
-                UserWrapper user = new UserWrapper(
-                        rs.getInt("id"),
-                        rs.getString("nom") + " " + rs.getString("prenom")
-                );
-                cbResponsable.getItems().add(user);
-                lvMembres.getItems().add(user);
+                UserWrapper u = new UserWrapper(rs.getInt("id"),
+                        rs.getString("nom") + " " + rs.getString("prenom"));
+                cbResponsable.getItems().add(u);
+                lvMembres.getItems().add(u);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     @FXML
@@ -82,21 +74,28 @@ public class AjoutProjetController {
             }
 
             int idChef = cbResponsable.getValue().id;
-            String nomsMembres = lvMembres.getSelectionModel().getSelectedItems()
-                    .stream().map(u -> u.nomComplet).collect(Collectors.joining(", "));
+            List<UserWrapper> membresSel = lvMembres.getSelectionModel().getSelectedItems();
+            String nomsMembres = membresSel.stream()
+                    .map(u -> u.nomComplet)
+                    .collect(Collectors.joining(", "));
 
             Projet p = new Projet(
-                    0,
-                    tfNom.getText(),
-                    taDescription.getText(),
+                    0, tfNom.getText(), taDescription.getText(),
                     java.sql.Date.valueOf(dpDateDebut.getValue()),
                     java.sql.Date.valueOf(dpDateFin.getValue()),
                     Double.parseDouble(tfBudget.getText()),
-                    cbStatut.getValue(),
-                    0, false, idChef, nomsMembres
+                    cbStatut.getValue(), 0, false, idChef, nomsMembres
             );
 
             projetService.ajouterProjet(p);
+
+            // ── Récupérer l'ID du projet qui vient d'être inséré ──
+            int projetId = getDernierId();
+            if (projetId > 0) {
+                // ── Synchroniser projet_utilisateur pour Symfony ──
+                syncProjetUtilisateur(projetId, membresSel);
+            }
+
             showAlert(Alert.AlertType.INFORMATION, "Projet ajouté !");
             annuler();
         } catch (Exception e) {
@@ -104,10 +103,42 @@ public class AjoutProjetController {
         }
     }
 
+    /**
+     * Récupère l'ID du dernier projet inséré
+     */
+    private int getDernierId() {
+        Connection conn = MyDataBase.getInstance().getCnx();
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery("SELECT LAST_INSERT_ID() as id")) {
+            if (rs.next()) return rs.getInt("id");
+        } catch (SQLException e) { e.printStackTrace(); }
+        return -1;
+    }
+
+    /**
+     * Insère les membres dans projet_utilisateur (table de jointure Symfony)
+     */
+    private void syncProjetUtilisateur(int projetId, List<UserWrapper> membres) {
+        if (membres.isEmpty()) return;
+        Connection conn = MyDataBase.getInstance().getCnx();
+        String sql = "INSERT IGNORE INTO projet_utilisateur (projet_id, utilisateur_id) VALUES (?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (UserWrapper u : membres) {
+                ps.setInt(1, projetId);
+                ps.setInt(2, u.id);
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            System.out.println("✅ projet_utilisateur synchronisé pour projet id=" + projetId);
+        } catch (SQLException e) {
+            System.err.println("❌ Erreur sync projet_utilisateur: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void bloquerDatesPassees(DatePicker picker) {
         picker.setDayCellFactory(p -> new DateCell() {
-            @Override
-            public void updateItem(LocalDate date, boolean empty) {
+            @Override public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
                 setDisable(empty || date.isBefore(LocalDate.now()));
             }
@@ -115,5 +146,5 @@ public class AjoutProjetController {
     }
 
     @FXML private void annuler() { ((Stage) tfNom.getScene().getWindow()).close(); }
-    private void showAlert(Alert.AlertType type, String message) { new Alert(type, message).showAndWait(); }
+    private void showAlert(Alert.AlertType type, String msg) { new Alert(type, msg).showAndWait(); }
 }

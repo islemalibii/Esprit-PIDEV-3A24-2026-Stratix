@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="18" prefWidth="500" stylesheets="@/style.css"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controllers.AjouterPhaseController"
+      style="-fx-background-color: white; -fx-padding: 35;">
+
+    <!-- Titre -->
+    <Label fx:id="labelTitre" text="➕ Ajouter une phase"
+           style="-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
+    <Separator/>
+
+    <!-- Nom -->
+    <VBox spacing="6">
+        <Label text="NOM DE LA PHASE *" styleClass="summary-label"/>
+        <TextField fx:id="fieldNom" promptText="Ex: Conception, Développement..."
+                   styleClass="modern-input"/>
+    </VBox>
+
+    <!-- Objectif -->
+    <VBox spacing="6">
+        <Label text="OBJECTIF" styleClass="summary-label"/>
+        <TextArea fx:id="fieldObjectif" promptText="Objectif de cette phase..."
+                  styleClass="modern-input" prefHeight="75" wrapText="true"/>
+    </VBox>
+
+    <!-- Dates -->
+    <HBox spacing="20">
+        <VBox spacing="6" HBox.hgrow="ALWAYS">
+            <Label text="DATE DE DÉBUT *" styleClass="summary-label"/>
+            <DatePicker fx:id="dateDebut" styleClass="modern-input" maxWidth="Infinity"/>
+        </VBox>
+        <VBox spacing="6" HBox.hgrow="ALWAYS">
+            <Label text="DATE DE FIN *" styleClass="summary-label"/>
+            <DatePicker fx:id="dateFin" styleClass="modern-input" maxWidth="Infinity"/>
+        </VBox>
+    </HBox>
+
+    <!-- Statut -->
+    <VBox spacing="6">
+        <Label text="STATUT" styleClass="summary-label"/>
+        <ComboBox fx:id="comboStatut" styleClass="modern-input" maxWidth="Infinity"/>
+    </VBox>
+
+    <!-- Vélocités -->
+    <HBox spacing="20">
+        <VBox spacing="6" HBox.hgrow="ALWAYS">
+            <Label text="VÉLOCITÉ ESTIMÉE" styleClass="summary-label"/>
+            <TextField fx:id="fieldVelociteEstimee" promptText="Ex: 20.5"
+                       styleClass="modern-input"/>
+        </VBox>
+        <VBox spacing="6" HBox.hgrow="ALWAYS">
+            <Label text="VÉLOCITÉ RÉELLE" styleClass="summary-label"/>
+            <TextField fx:id="fieldVelociteReelle" promptText="Ex: 18.0"
+                       styleClass="modern-input"/>
+        </VBox>
+    </HBox>
+
+    <!-- Erreur -->
+    <Label fx:id="labelErreur"
+           style="-fx-text-fill: #ef4444; -fx-font-size: 12;" wrapText="true"/>
+
+    <Separator/>
+
+    <!-- Boutons -->
+    <HBox spacing="15" alignment="CENTER_RIGHT">
+        <Button text="Annuler" onAction="#handleAnnuler"
+                style="-fx-padding: 10 25; -fx-background-color: #f1f5f9;
+                       -fx-text-fill: #64748b; -fx-background-radius: 8; -fx-cursor: hand;"/>
+        <Button text="💾 Sauvegarder" onAction="#handleSauvegarder"
+                styleClass="btn-secondary" style="-fx-padding: 10 25;"/>
+    </HBox>
+
+</VBox>

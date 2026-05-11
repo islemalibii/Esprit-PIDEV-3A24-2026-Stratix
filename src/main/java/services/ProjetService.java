@@ -1,9 +1,7 @@
 package services;
-
 import interfaces.ProjServices;
 import models.Projet;
 import utils.MyDataBase;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
